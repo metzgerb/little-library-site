@@ -1,0 +1,82 @@
+<div id="top-div">
+<h1>Simple Workout Tracker</h1>
+<p id="errorMsg"></p>
+<form method="post" id="input-form">
+   <table class="form-table">
+      <thead></thead>
+      <tbody>
+         <tr>
+            <td>
+               <input type="hidden" id="formId" name="id" />
+               <label for="date">Date of Workout: </label>
+            </td>
+            <td>
+               <input type="date" id="formDate" name="date"/>
+            </td>
+            <td>
+               <label for="name">Workout Name: </label>
+            </td>
+            <td colspan="3">
+               <input type="text" id="formName" name="name"/>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <label for="reps">Number of Reps: </label>
+            </td>
+            <td>
+               <input type="text" id="formReps" name="reps"/>
+            </td>
+            <td>
+               <label for="weight">Weight Used: </label>
+            </td>
+            <td>
+               <input type="text" id="formWeight" name="weight"/>
+            </td>
+            <td>
+               <label for="unit">Unit of Weight: </label>
+            </td>
+            <td>
+               <input type="radio" name="unit" id="formLbs" value="lbs"/> lbs
+               <input type="radio" name="unit" id="formKgs" value="kgs"/> kgs
+            </td>
+         </tr>
+         <tr>
+            <td colspan="6" align="center">
+               <button id="formBtn" type="button">Add</button>
+               <button id="resetBtn" type="button">Reset</button>
+            </td>
+         </tr>
+      </tbody>
+   </table>
+</form>
+</div>
+<table>
+   <thead>
+      <th>Date</th>
+      <th>Workout Name</th>
+      <th># of Reps</th>
+      <th>Weight Used</th>
+      <th>Unit of Weight</th>
+      <th>Options</th>
+   </thead>
+   <tbody id="data-table">
+      {{#if results}}
+         {{#each results}}
+            <tr id={{this.id}}>
+               <td>{{this.date}}</td>
+               <td>{{this.name}}</td>
+               <td>{{this.reps}}</td>
+               <td>{{this.weight}}</td>
+               <td>{{#if this.lbs}} lbs {{/if}}{{#if this.kgs}} kgs {{/if}}</td>
+               <td>
+                  <button type="button" onclick="editRow({{this.id}})">Edit</button>
+                  <button type="button" onclick="deleteRow({{this.id}})">Delete</button>
+               </td>
+            </tr>
+         {{/each}}
+      {{/if}}
+   </tbody>
+</table>
+
+
