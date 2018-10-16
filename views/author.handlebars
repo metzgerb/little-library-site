@@ -1,5 +1,5 @@
 <div id="top-div">
-<h1>Books</h1>
+<h1>Authors</h1>
 <p id="errorMsg"></p>
 <form method="post" id="input-form">
    <table class="form-table">
@@ -14,7 +14,7 @@
                <input type="date" id="formDate" name="date"/>
             </td>
             <td>
-               <label for="name">Workout Name: </label>
+               <label for="name">First Name: </label>
             </td>
             <td colspan="3">
                <input type="text" id="formName" name="name"/>
@@ -53,22 +53,17 @@
 </div>
 <table>
    <thead>
-      <th>Date</th>
-      <th>Workout Name</th>
-      <th># of Reps</th>
-      <th>Weight Used</th>
-      <th>Unit of Weight</th>
-      <th>Options</th>
+      <th>First Name</th>
+      <th>Last Name</th>
+      <th>Number of Books</th>
    </thead>
    <tbody id="data-table">
       {{#if results}}
          {{#each results}}
             <tr id={{this.id}}>
-               <td>{{this.date}}</td>
-               <td>{{this.name}}</td>
-               <td>{{this.reps}}</td>
-               <td>{{this.weight}}</td>
-               <td>{{#if this.lbs}} lbs {{/if}}{{#if this.kgs}} kgs {{/if}}</td>
+               <td>{{this.first_name}}</td>
+               <td>{{this.last_name}}</td>
+               <td>Add books count hyperlink here</td>
                <td>
                   <button type="button" onclick="editRow({{this.id}})">Edit</button>
                   <button type="button" onclick="deleteRow({{this.id}})">Delete</button>
