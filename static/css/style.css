@@ -67,6 +67,30 @@ input[type=date] {
    background-color: #ddd;
 }
 
+.main-div {
+   width: 100%;
+   display: block;
+   height: auto;
+}
+
+.main-div a{
+   margin: 8px 5px;
+   background-color: DarkGray;
+   text-align: center;
+   width: 100px;
+   padding: 14px 16px;
+   color: white;
+   text-decoration: none;
+   font-weight: bold;
+   border: none;
+}
+
+
+.main-div a:hover {
+   background-color: #4CAF50;
+   color: white;
+}
+
 button {
    background-color: DarkGray;
    text-align: center;

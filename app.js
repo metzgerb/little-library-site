@@ -12,11 +12,15 @@ app.use(bodyParser.json());
 
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
-app.set('port', 8455);
+app.set('port', 8545);
 app.use(express.static('static'));
 
 //render GET for homepage
-app.get('/',function(req,res,next){
+app.get('/',function(req,res,next){    
+   res.render('home');
+});
+
+/*app.get('/',function(req,res,next){
    var context = {};
    mysql.pool.query('SELECT * FROM books', function(err, rows, fields){
       if(err){
@@ -42,10 +46,10 @@ app.get('/',function(req,res,next){
       
       res.render('home', context);
    });
-});
+});*/
 
 //render POST for homepage
-app.post('/',function(req,res,next){
+/*app.post('/',function(req,res,next){
    //check if adding a new item
    if(req.body.hasOwnProperty('add')){
       //insert into database
@@ -116,24 +120,153 @@ app.post('/',function(req,res,next){
       });
    }
 });
-
-/*app.get('/reset-table',function(req,res,next){
-   var context = {};
-   mysql.pool.query("DROP TABLE IF EXISTS workouts", function(err){
-      var createString = "CREATE TABLE workouts("+
-      "id INT PRIMARY KEY AUTO_INCREMENT,"+
-      "name VARCHAR(255) NOT NULL,"+
-      "reps INT,"+
-      "weight INT,"+
-      "date DATE,"+
-      "lbs BOOLEAN)";
-      mysql.pool.query(createString, function(err){
-         context.results = "Table reset";
-         res.render('db',context);
-      });
-   });
-});
 */
+
+//GET for books section
+app.get('/book',function(req,res,next){
+   var context = {};
+   /*mysql.pool.query('SELECT * FROM books', function(err, rows, fields){
+      if(err){
+         next(err);
+         return;
+      }
+      
+      context.results = rows;
+     
+      //perform formatting
+      for (var i = 0; i< context.results.length; i++){
+         //reformat dates
+         if (context.results[i].date != null){
+            context.results[i].date = moment(context.results[i].date).format('MM-DD-YYYY');
+         }
+         //add kgs to results
+         if(context.results[i].lbs == null) {
+            context.results[i].kgs = false;
+         } else {
+            context.results[i].kgs = !context.results[i].lbs;
+         }
+      }*/
+      
+      res.render('book', context);
+   //});
+});
+
+//GET for reader section
+app.get('/reader',function(req,res,next){
+   var context = {};
+   /*mysql.pool.query('SELECT * FROM books', function(err, rows, fields){
+      if(err){
+         next(err);
+         return;
+      }
+      
+      context.results = rows;
+     
+      //perform formatting
+      for (var i = 0; i< context.results.length; i++){
+         //reformat dates
+         if (context.results[i].date != null){
+            context.results[i].date = moment(context.results[i].date).format('MM-DD-YYYY');
+         }
+         //add kgs to results
+         if(context.results[i].lbs == null) {
+            context.results[i].kgs = false;
+         } else {
+            context.results[i].kgs = !context.results[i].lbs;
+         }
+      }*/
+      
+      res.render('reader', context);
+   //});
+});
+
+//GET for authors section
+app.get('/author',function(req,res,next){
+   var context = {};
+   /*mysql.pool.query('SELECT * FROM books', function(err, rows, fields){
+      if(err){
+         next(err);
+         return;
+      }
+      
+      context.results = rows;
+     
+      //perform formatting
+      for (var i = 0; i< context.results.length; i++){
+         //reformat dates
+         if (context.results[i].date != null){
+            context.results[i].date = moment(context.results[i].date).format('MM-DD-YYYY');
+         }
+         //add kgs to results
+         if(context.results[i].lbs == null) {
+            context.results[i].kgs = false;
+         } else {
+            context.results[i].kgs = !context.results[i].lbs;
+         }
+      }*/
+      
+      res.render('author', context);
+   //});
+});
+
+//GET for topics section
+app.get('/topic',function(req,res,next){
+   var context = {};
+   /*mysql.pool.query('SELECT * FROM books', function(err, rows, fields){
+      if(err){
+         next(err);
+         return;
+      }
+      
+      context.results = rows;
+     
+      //perform formatting
+      for (var i = 0; i< context.results.length; i++){
+         //reformat dates
+         if (context.results[i].date != null){
+            context.results[i].date = moment(context.results[i].date).format('MM-DD-YYYY');
+         }
+         //add kgs to results
+         if(context.results[i].lbs == null) {
+            context.results[i].kgs = false;
+         } else {
+            context.results[i].kgs = !context.results[i].lbs;
+         }
+      }*/
+      
+      res.render('topic', context);
+   //});
+});
+
+//GET for shelf section
+app.get('/shelf',function(req,res,next){
+   var context = {};
+   /*mysql.pool.query('SELECT * FROM books', function(err, rows, fields){
+      if(err){
+         next(err);
+         return;
+      }
+      
+      context.results = rows;
+     
+      //perform formatting
+      for (var i = 0; i< context.results.length; i++){
+         //reformat dates
+         if (context.results[i].date != null){
+            context.results[i].date = moment(context.results[i].date).format('MM-DD-YYYY');
+         }
+         //add kgs to results
+         if(context.results[i].lbs == null) {
+            context.results[i].kgs = false;
+         } else {
+            context.results[i].kgs = !context.results[i].lbs;
+         }
+      }*/
+      
+      res.render('shelf', context);
+   //});
+});
+
 app.use(function(req,res){
   res.status(404);
   res.render('404');
