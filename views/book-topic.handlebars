@@ -9,12 +9,12 @@
          <tr>
             <td>
                <input type="hidden" id="formId" name="id"/>
-               <label for="author">Author to Add: </label>
+               <label for="topic">Topic to Add: </label>
             </td>
             <td width=250px>
-               <select id="formAuthor" name="author"/>
+               <select id="formTopic" name="topic"/>
                   <option disabled selected value></option>
-                  <option name="author" value="author id">Author Name</option>
+                  <option name="topic" value="topic id">Topic Category</option>
                </select>
             </td>
          </tr>
@@ -29,22 +29,24 @@
 </div>
 <table>
    <thead>
-      <th>Author Name</th>
+      <th>Topic Category</th>
       <th>Options</th>
    </thead>
    <tbody id="data-table">
       <tr id={{this.id}}>
-         <td>first name, last name</td>
+         <td>Topic Category</td>
+         <td>Topic Description</td>
          <td>
-            <button type="button" style="width:150px;" onclick="DeleteRow({{this.isbn}}, {{this.id}})">Remove Author</button>
+            <button type="button" style="width:150px;" onclick="DeleteRow({{this.isbn}}, {{this.id}})">Remove Topic</button>
          </td>
       </tr>
       {{#if results}}
          {{#each results}}
             <tr id={{this.id}}>
-               <td>{{this.first_name}}, {{this.last_name}}</td>
+               <td>{{this.topic}}</td>
+               <td>{{this.category}}</td>
                <td>
-                  <button type="button" onclick="deleteRow({{this.isbn}}, {{this.id}})">Remove Author</button>
+                  <button type="button" onclick="deleteRow({{this.isbn}}, {{this.id}})">Remove Topic</button>
                </td>
             </tr>
          {{/each}}
