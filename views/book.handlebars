@@ -7,38 +7,42 @@
       <tbody>
          <tr>
             <td>
-               <input type="hidden" id="formId" name="id" />
-               <label for="date">Date of Workout: </label>
+               <label for="isbn">ISBN: </label>
+            </td>
+            <td colspan="3" align="center">
+               <input type="text" id="formISBN" name="isbn"/>
+            </td>
+            <td width="250px">
+            </td>
+            <td width="250px">
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <label for="date">Published Date: </label>
             </td>
             <td>
                <input type="date" id="formDate" name="date"/>
             </td>
             <td>
-               <label for="name">Workout Name: </label>
+               <label for="title">Title: </label>
             </td>
             <td colspan="3">
-               <input type="text" id="formName" name="name"/>
+               <input type="text" id="formTitle" name="title"/>
             </td>
          </tr>
          <tr>
             <td>
-               <label for="reps">Number of Reps: </label>
+               <label for="authors">Authors: </label>
             </td>
             <td>
-               <input type="text" id="formReps" name="reps"/>
+               <input type="text" id="formAuthors" name="authors"/>
             </td>
             <td>
-               <label for="weight">Weight Used: </label>
+               <label for="description">Description: </label>
             </td>
-            <td>
-               <input type="text" id="formWeight" name="weight"/>
-            </td>
-            <td>
-               <label for="unit">Unit of Weight: </label>
-            </td>
-            <td>
-               <input type="radio" name="unit" id="formLbs" value="lbs"/> lbs
-               <input type="radio" name="unit" id="formKgs" value="kgs"/> kgs
+            <td colspan="3">
+               <input type="text" id="formdescription" name="weight"/>
             </td>
          </tr>
          <tr>
@@ -81,4 +85,4 @@
    </tbody>
 </table>
 
-
+<script src="js/actions.js"></script>

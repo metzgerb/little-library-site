@@ -1,15 +1,43 @@
 <h1>Little Library Database</h1>
-<div style="text-align:center">
-   <div class="main-div">
-      <a href="/book">Books</a>
-      <a href="/reader">Readers</a>
-   </div>
-   <div class="main-div"> 
-      <a href="/topic">Topics</a>
-      <a href="/author">Authors</a>
-   </div>
-   <div class="main-div">
-      <a href="/shelf">Shelf</a>
-   </div>
-</div>
 
+<p>The Little Library system helps librarians manage the current inventory of books and their metadata.</p>
+<p>It can also be used to add readers, check in and check out books for the readers and also track the location of books on the physical shelves in the library.</p>
+
+<hr>
+
+<h3>Search Library</h3>
+
+<p>Use the form below to search among books, readers, authors, topics, or shelves</p>
+
+<form method="GET" id="search-form">
+   <table class="form-table">
+      <thead></thead>
+      <tbody>
+         <tr>
+            <td>
+               <input type="radio" name="area" id="formBook" value="book"/> Books
+            </td>
+            <td>
+               <input type="radio" name="area" id="formReader" value="reader"/> Readers
+            </td>
+            <td>   
+               <input type="radio" name="area" id="formAuthor" value="author"/> Authors
+            </td>
+            <td>
+               <input type="radio" name="area" id="formtopic" value="topic"/> Topic
+            </td>
+            <td>
+               <input type="radio" name="area" id="formShelf" value="shelf"/> Shelf
+            </td>
+         <tr>
+            <td colspan="5">
+               <input type="text" id="formSearch" name="searchText"/>
+            </td>
+         <tr>
+            <td colspan="5" align="center">
+               <button id="searchBtn" type="button">Search</button>
+            </td>
+         </tr>
+      </tbody>
+   </table>
+</form>
