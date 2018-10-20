@@ -157,12 +157,6 @@ app.get('/book/author',function(req,res,next){
    res.render('book-author', context);
 });
 
-//render GET for book-topic (Edit Topics)
-app.get('/book/topic',function(req,res,next){    
-   var context = {};
-   res.render('book-topic', context);
-});
-
 //GET for reader section
 app.get('/reader',function(req,res,next){
    var context = {};
