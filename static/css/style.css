@@ -97,6 +97,11 @@ input[type=text] {
    width: 100%;
 }
 
+input[type=textarea] {
+   height: 100px;
+   width: 100%;
+}
+
 input[type=date] {
    height: 30px;
    width: 100%;

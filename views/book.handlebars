@@ -12,9 +12,17 @@
             <td colspan="3" align="center">
                <input type="text" id="formISBN" name="isbn"/>
             </td>
-            <td width="250px">
+            <td>
+               <label for="topic">Topic: </label>
             </td>
-            <td width="250px">
+            <td>
+               <input type="text" id="formTopic" name="topic"/>
+            </td>
+            <td>
+               <label for="shelf">Shelf: </label>
+            </td>
+            <td>
+               <input type="text" id="formShelf" name="shelf"/>
             </td>
          </tr>
          <tr>
@@ -27,7 +35,7 @@
             <td>
                <label for="title">Title: </label>
             </td>
-            <td colspan="3">
+            <td colspan="5">
                <input type="text" id="formTitle" name="title"/>
             </td>
          </tr>
@@ -41,12 +49,16 @@
             <td>
                <label for="description">Description: </label>
             </td>
-            <td colspan="3">
-               <input type="text" id="formdescription" name="weight"/>
+            <td colspan="5" rowspan="3">
+               <input type="textarea" id="formdescription" name="weight"/>
             </td>
          </tr>
          <tr>
-            <td colspan="6" align="center">
+         </tr>
+         <tr>
+         </tr>
+         <tr>
+            <td colspan="8" align="center">
                <button id="formBtn" type="button">Add</button>
                <button id="resetBtn" type="button">Reset</button>
             </td>
@@ -62,10 +74,26 @@
       <th>Date Published</th>
       <th>Description</th>
       <th>Authors</th>
+      <th>Topic</th>
+      <th>Shelf</th>
       <th>Status</th>
       <th>Options</th>
    </thead>
    <tbody id="data-table">
+      <tr>
+         <td>isbn</td>
+         <td>title</td>
+         <td>published_date</td>
+         <td>description</td>
+         <td>comma separted list of authors</td>
+         <td>topic</td>
+         <td>shelf</td>
+         <td>available or unavailable</td>
+         <td>
+            <button type="button" onclick="editRow({{this.id}})">Edit</button>
+            <button type="button" onclick="deleteRow({{this.id}})">Delete</button>
+         </td>
+      </tr>
       {{#if results}}
          {{#each results}}
             <tr id={{this.isbn}}>
@@ -73,7 +101,9 @@
                <td>{{this.title}}</td>
                <td>{{this.published_date}}</td>
                <td>{{this.description}}</td>
-               <td>Add list of authors</td>
+               <td>{{this.authors}}</td>
+               <td>{{this.topic}}</td>
+               <td>{{this.shelf}}</td>
                <td>{{#if this.checked_out}}un{{/if}}available</td>
                <td>
                   <button type="button" onclick="editRow({{this.id}})">Edit</button>

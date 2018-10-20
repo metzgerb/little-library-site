@@ -8,41 +8,14 @@
          <tr>
             <td>
                <input type="hidden" id="formId" name="id" />
-               <label for="date">Date of Workout: </label>
+               <label for="location">Shelf Location: </label>
             </td>
             <td>
-               <input type="date" id="formDate" name="date"/>
-            </td>
-            <td>
-               <label for="name">Workout Name: </label>
-            </td>
-            <td colspan="3">
-               <input type="text" id="formName" name="name"/>
+               <input type="text" id="formLocation" name="location"/>
             </td>
          </tr>
          <tr>
-            <td>
-               <label for="reps">Number of Reps: </label>
-            </td>
-            <td>
-               <input type="text" id="formReps" name="reps"/>
-            </td>
-            <td>
-               <label for="weight">Weight Used: </label>
-            </td>
-            <td>
-               <input type="text" id="formWeight" name="weight"/>
-            </td>
-            <td>
-               <label for="unit">Unit of Weight: </label>
-            </td>
-            <td>
-               <input type="radio" name="unit" id="formLbs" value="lbs"/> lbs
-               <input type="radio" name="unit" id="formKgs" value="kgs"/> kgs
-            </td>
-         </tr>
-         <tr>
-            <td colspan="6" align="center">
+            <td colspan="2" align="center">
                <button id="formBtn" type="button">Add</button>
                <button id="resetBtn" type="button">Reset</button>
             </td>
@@ -54,10 +27,18 @@
 <table>
    <thead>
       <th>Location</th>
-      <th>Details</th>
+      <th>Books on Shelf</th>
       <th>Options</th>
    </thead>
    <tbody id="data-table">
+      <tr id={{this.id}}>
+               <td>location</td>
+               <td><a href="/book">Count books on shelf (hyperlink)</a></td>
+               <td>
+                  <button type="button" onclick="editRow({{this.id}})">Edit</button>
+                  <button type="button" onclick="deleteRow({{this.id}})">Delete</button>
+               </td>
+            </tr>
       {{#if results}}
          {{#each results}}
             <tr id={{this.id}}>
