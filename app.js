@@ -151,6 +151,18 @@ app.get('/book',function(req,res,next){
    //});
 });
 
+//render GET for book-author (Edit Authors)
+app.get('/book/author',function(req,res,next){    
+   var context = {};
+   res.render('book-author', context);
+});
+
+//render GET for book-topic (Edit Topics)
+app.get('/book/topic',function(req,res,next){    
+   var context = {};
+   res.render('book-topic', context);
+});
+
 //GET for reader section
 app.get('/reader',function(req,res,next){
    var context = {};
@@ -178,6 +190,12 @@ app.get('/reader',function(req,res,next){
       
       res.render('reader', context);
    //});
+});
+
+//render GET for reader-detail (check in/out)
+app.get('/reader/detail',function(req,res,next){    
+   var context = {};
+   res.render('reader-detail', context);
 });
 
 //GET for authors section

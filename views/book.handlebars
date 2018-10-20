@@ -13,16 +13,22 @@
                <input type="text" id="formISBN" name="isbn"/>
             </td>
             <td>
-               <label for="topic">Topic: </label>
+               <label for="topic">Primary Topic: </label>
             </td>
-            <td>
-               <input type="text" id="formTopic" name="topic"/>
+            <td width=250px>
+               <select id="formTopic" name="topic"/>
+                  <option disabled selected value></option>
+                  <option name="topic" value="topic id">Topic Category</option>
+               </select>
             </td>
             <td>
                <label for="shelf">Shelf: </label>
             </td>
-            <td>
-               <input type="text" id="formShelf" name="shelf"/>
+            <td width=250px>
+               <select id="formShelf" name="shelf"/>
+                  <option disabled selected value></option>
+                  <option name="shelf" value="shelf id">Shelf Location</option>
+               </select>
             </td>
          </tr>
          <tr>
@@ -35,21 +41,24 @@
             <td>
                <label for="title">Title: </label>
             </td>
-            <td colspan="5">
+            <td colspan="3">
                <input type="text" id="formTitle" name="title"/>
+            </td>
+            <td>
+               <label for="author">Primary Author: </label>
+            </td>
+            <td>
+               <select id="formAuthor" name="author"/>
+                  <option disabled selected value></option>
+                  <option name="author" value="author id">Author Name</option>
+               </select>
             </td>
          </tr>
          <tr>
             <td>
-               <label for="authors">Authors: </label>
-            </td>
-            <td>
-               <input type="text" id="formAuthors" name="authors"/>
-            </td>
-            <td>
                <label for="description">Description: </label>
             </td>
-            <td colspan="5" rowspan="3">
+            <td colspan="7" rowspan="3">
                <input type="textarea" id="formdescription" name="weight"/>
             </td>
          </tr>
@@ -60,6 +69,8 @@
          <tr>
             <td colspan="8" align="center">
                <button id="formBtn" type="button">Add</button>
+               <button id="authorBtn" type="button" style="width:150px;" onclick="window.location.href='/book/author/?b={{this.isbn}}'">Add/Edit Authors</button>
+               <button id="topicBtn" type="button" style="width:150px;" onclick="window.location.href='/book/topic/?b={{this.isbn}}'">Add/Edit Topics</button>
                <button id="resetBtn" type="button">Reset</button>
             </td>
          </tr>
@@ -90,8 +101,8 @@
          <td>shelf</td>
          <td>available or unavailable</td>
          <td>
-            <button type="button" onclick="editRow({{this.id}})">Edit</button>
-            <button type="button" onclick="deleteRow({{this.id}})">Delete</button>
+            <button type="button" onclick="editRow({{this.isbn}})">Edit</button>
+            <button type="button" onclick="deleteRow({{this.isbn}})">Delete</button>
          </td>
       </tr>
       {{#if results}}
@@ -106,8 +117,8 @@
                <td>{{this.shelf}}</td>
                <td>{{#if this.checked_out}}un{{/if}}available</td>
                <td>
-                  <button type="button" onclick="editRow({{this.id}})">Edit</button>
-                  <button type="button" onclick="deleteRow({{this.id}})">Delete</button>
+                  <button type="button" onclick="editRow({{this.isbn}})">Edit</button>
+                  <button type="button" onclick="deleteRow({{this.isbn}})">Delete</button>
                </td>
             </tr>
          {{/each}}

@@ -107,6 +107,12 @@ input[type=date] {
    width: 100%;
 }
 
+select {
+   border: 1px solid #ddd;
+   height: 30px;
+   width: 100%;
+}
+
 #top-div {
    background-color: #ddd;
 }

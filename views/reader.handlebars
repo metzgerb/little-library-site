@@ -24,7 +24,7 @@
             <td>
                <label for="phone">Phone Number: </label>
             </td>
-            <td colspan="3">
+            <td colspan="2">
                <input type="text" id="formPhone" name="phone"/>
             </td>
             <td>
@@ -32,6 +32,8 @@
             </td>
             <td>
                <input type="date" id="formExpdate" name="expdate"/>
+            </td>
+            <td width=100px>
             </td>
          </tr>
          <tr>
@@ -56,28 +58,26 @@
    </thead>
    <tbody id="data-table">
       <tr>
-         <td>id</td>
+         <td>id (<a href="/reader/detail/?r={{this.id}}">check in/out</a>)</td>
          <td>first_name</td>
          <td>this.last_name</td>
          <td>this.phone</td>
          <td>this.card_expiration</td>
-         <td><a href="/book">count of books checked out (hyperlink)</a></td>
+         <td>count of books checked out</td>
          <td>
             <button type="button" onclick="editRow({{this.id}})">Edit</button>
-            <button type="button" onclick="checkIn({{this.id}})">Check In</button>
-            <button type="button" onclick="checkOut({{this.id}})">Check Out</button>
             <button type="button" onclick="deleteRow({{this.id}})">Delete</button>
          </td>
       </tr>
       {{#if results}}
          {{#each results}}
             <tr id={{this.id}}>
-               <td>{{this.id}}</td>
+               <td>{{this.id}} (<a href="/reader/detail/?r={{this.id}}">check in/out</a>)</td>
                <td>{{this.first_name}}</td>
                <td>{{this.last_name}}</td>
                <td>{{this.phone}}</td>
                <td>{{this.card_expiration}}</td>
-               <td>Add books checked out count hyperlink</td>
+               <td>Add books checked out count</td>
                <td>
                   <button type="button" onclick="editRow({{this.id}})">Edit</button>
                   <button type="button" onclick="deleteRow({{this.id}})">Delete</button>

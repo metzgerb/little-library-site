@@ -1,0 +1,55 @@
+<div id="top-div">
+<h1>Title{{this.title}}</h1>
+<h3>({{this.isbn}}ISBN)</h3>
+<p id="errorMsg"></p>
+<form method="post" id="input-form">
+   <table class="form-table">
+      <thead></thead>
+      <tbody>
+         <tr>
+            <td>
+               <input type="hidden" id="formId" name="id"/>
+               <label for="author">Author to Add: </label>
+            </td>
+            <td width=250px>
+               <select id="formAuthor" name="author"/>
+                  <option disabled selected value></option>
+                  <option name="author" value="author id">Author Name</option>
+               </select>
+            </td>
+         </tr>
+         <tr>
+            <td colspan="2" align="center">
+               <button id="formBtn" type="button" style="width:150px;">Add to Book</button>
+            </td>
+         </tr>
+      </tbody>
+   </table>
+</form>
+</div>
+<table>
+   <thead>
+      <th>Author Name</th>
+      <th>Options</th>
+   </thead>
+   <tbody id="data-table">
+      <tr id={{this.id}}>
+         <td>first name, last name</td>
+         <td>
+            <button type="button" style="width:150px;" onclick="DeleteRow({{this.isbn}}, {{this.id}})">Remove Author</button>
+         </td>
+      </tr>
+      {{#if results}}
+         {{#each results}}
+            <tr id={{this.id}}>
+               <td>{{this.first_name}}, {{this.last_name}}</td>
+               <td>
+                  <button type="button" onclick="deleteRow({{this.isbn}}, {{this.id}})">Remove Author</button>
+               </td>
+            </tr>
+         {{/each}}
+      {{/if}}
+   </tbody>
+</table>
+
+<script src="js/actions.js"></script>
