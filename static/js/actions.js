@@ -282,3 +282,7 @@ function resetForm(){
    document.getElementById("formName").style.borderColor = "#ddd";
    document.getElementById("formName").style.borderWidth = "1px";
 }
+
+function checkOut(id){
+   window.location.href = '/reader/checkout/?r=' + id;
+}

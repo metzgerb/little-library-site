@@ -151,10 +151,10 @@ app.get('/book',function(req,res,next){
    //});
 });
 
-//render GET for book-author (Edit Authors)
-app.get('/book/author',function(req,res,next){    
+//render GET for reader-checkout (checkout books)
+app.get('/reader/checkout',function(req,res,next){    
    var context = {};
-   res.render('book-author', context);
+   res.render('reader-checkout', context);
 });
 
 //GET for reader section

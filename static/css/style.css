@@ -113,6 +113,12 @@ select {
    width: 100%;
 }
 
+#formBookAuthor{
+   border: 1px solid #ddd;
+   height: 150px;
+   width: 100%;
+}
+
 #top-div {
    background-color: #ddd;
 }

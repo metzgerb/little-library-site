@@ -1,0 +1,65 @@
+<div id="top-div">
+<h1>Checkout</h1>
+<p id="errorMsg"></p>
+<form method="post" id="input-form">
+   <table class="form-table">
+      <thead></thead>
+      <tbody>
+         <tr>
+            <td>
+               <input type="hidden" id="formId" name="id" value={{this.readerid}}/>
+               <input type="text" id="formSearch" name="searchText"/>
+            </td>
+         <tr>
+            <td align="center">
+               <button id="searchBtn" type="button">Search</button>
+            </td>
+         </tr>
+      </tbody>
+   </table>
+</form>
+</div>
+<table>
+   <thead>
+      <th>isbn</th>
+      <th>Title</th>
+      <th>Date Published</th>
+      <th>Description</th>
+      <th>Authors</th>
+      <th>Topic</th>
+      <th>Shelf</th>
+      <th>Options</th>
+   </thead>
+   <tbody id="data-table">
+      <tr>
+         <td>isbn</td>
+         <td>title</td>
+         <td>published_date</td>
+         <td>description</td>
+         <td>comma separted list of authors</td>
+         <td>topic</td>
+         <td>shelf</td>
+         <td>
+            <button type="button" onclick="checkOut({{this.isbn}})">Check Out Book</button>
+         </td>
+      </tr>
+      {{#if results}}
+         {{#each results}}
+            <tr id={{this.isbn}}>
+               <td>{{this.isbn}}</td>
+               <td>{{this.title}}</td>
+               <td>{{this.published_date}}</td>
+               <td>{{this.description}}</td>
+               <td>{{this.authors}}</td>
+               <td>{{this.topic}}</td>
+               <td>{{this.shelf}}</td>
+               <td>
+                  <button type="button" onclick="checkOut({{this.isbn}})">Check Out Book</button>
+               </td>
+            </tr>
+         {{/each}}
+      {{/if}}
+   </tbody>
+</table>
+
+<script src="js/actions.js"></script>

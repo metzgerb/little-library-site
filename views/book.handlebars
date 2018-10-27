@@ -45,12 +45,12 @@
                <input type="text" id="formTitle" name="title"/>
             </td>
             <td>
-               <label for="author">Primary Author: </label>
+               <label for="author">Author(s): </label>
             </td>
-            <td>
-               <select id="formAuthor" name="author"/>
-                  <option disabled selected value></option>
+            <td rowspan="4">
+               <select multiple id="formBookAuthor" name="author"/>
                   <option name="author" value="author id">Author Name</option>
+                  <option name="author" value="author id2">Author Name2</option>
                </select>
             </td>
          </tr>
@@ -58,7 +58,7 @@
             <td>
                <label for="description">Description: </label>
             </td>
-            <td colspan="7" rowspan="3">
+            <td colspan="6" rowspan="3">
                <input type="textarea" id="formdescription" name="weight"/>
             </td>
          </tr>
@@ -69,7 +69,6 @@
          <tr>
             <td colspan="8" align="center">
                <button id="formBtn" type="button">Add</button>
-               <button id="authorBtn" type="button" style="width:150px;" onclick="window.location.href='/book/author/?b={{this.isbn}}'">Add/Edit Authors</button>
                <button id="resetBtn" type="button">Reset</button>
             </td>
          </tr>

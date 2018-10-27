@@ -58,13 +58,14 @@
    </thead>
    <tbody id="data-table">
       <tr>
-         <td>id (<a href="/reader/detail/?r={{this.id}}">check in/out</a>)</td>
+         <td>id</td>
          <td>first_name</td>
          <td>this.last_name</td>
          <td>this.phone</td>
          <td>this.card_expiration</td>
-         <td>count of books checked out</td>
+         <td><a href="/reader/detail/?r={{this.id}}">count of books checked out</a></td>
          <td>
+            <button type="button" onclick="checkOut({{this.id}})" style="width: 150px">Check Out Books</button>
             <button type="button" onclick="editRow({{this.id}})">Edit</button>
             <button type="button" onclick="deleteRow({{this.id}})">Delete</button>
          </td>
@@ -79,6 +80,7 @@
                <td>{{this.card_expiration}}</td>
                <td>Add books checked out count</td>
                <td>
+                  <button type="button" onclick="checkOut({{this.id}})" style="width: 150px">Check Out Books</button>
                   <button type="button" onclick="editRow({{this.id}})">Edit</button>
                   <button type="button" onclick="deleteRow({{this.id}})">Delete</button>
                </td>
