@@ -125,7 +125,17 @@ app.get('/',function(req,res,next){
 //GET for books section
 app.get('/book',function(req,res,next){
    var context = {};
-   /*mysql.pool.query('SELECT * FROM books', function(err, rows, fields){
+   mysql.pool.query('SELECT b.isbn, b.title, b.published_date, b.description, ba.authors, t.category, s.location, b.checked_out \
+                     FROM book b \
+                     INNER JOIN topic t ON b.tid = t.id \
+                     INNER JOIN shelf s ON b.sid = s.id \
+                     INNER JOIN (SELECT tmp.bid AS bid, GROUP_CONCAT(author) AS authors \
+                                 FROM (SELECT b.bid, CONCAT(a.first_name, " ", a.last_name) AS author \
+                                       FROM book_author b \
+                                       INNER JOIN author a ON b.aid = a.id) AS tmp \
+                     GROUP BY tmp.bid) AS ba ON b.isbn = ba.bid \
+                     ORDER BY b.title', 
+   function(err, rows, fields){
       if(err){
          next(err);
          return;
@@ -136,19 +146,13 @@ app.get('/book',function(req,res,next){
       //perform formatting
       for (var i = 0; i< context.results.length; i++){
          //reformat dates
-         if (context.results[i].date != null){
-            context.results[i].date = moment(context.results[i].date).format('MM-DD-YYYY');
+         if (context.results[i].published_date != null){
+            context.results[i].published_date = moment(context.results[i].published_date).format('MM-DD-YYYY');
          }
-         //add kgs to results
-         if(context.results[i].lbs == null) {
-            context.results[i].kgs = false;
-         } else {
-            context.results[i].kgs = !context.results[i].lbs;
-         }
-      }*/
+      }
       
       res.render('book', context);
-   //});
+   });
 });
 
 //render GET for reader-checkout (checkout books)

@@ -89,20 +89,6 @@
       <th>Options</th>
    </thead>
    <tbody id="data-table">
-      <tr>
-         <td>isbn</td>
-         <td>title</td>
-         <td>published_date</td>
-         <td>description</td>
-         <td>comma separted list of authors</td>
-         <td>topic</td>
-         <td>shelf</td>
-         <td>available or unavailable</td>
-         <td>
-            <button type="button" onclick="editRow({{this.isbn}})">Edit</button>
-            <button type="button" onclick="deleteRow({{this.isbn}})">Delete</button>
-         </td>
-      </tr>
       {{#if results}}
          {{#each results}}
             <tr id={{this.isbn}}>
@@ -111,9 +97,9 @@
                <td>{{this.published_date}}</td>
                <td>{{this.description}}</td>
                <td>{{this.authors}}</td>
-               <td>{{this.topic}}</td>
-               <td>{{this.shelf}}</td>
-               <td>{{#if this.checked_out}}un{{/if}}available</td>
+               <td>{{this.category}}</td>
+               <td>{{this.location}}</td>
+               <td>{{#if this.checked_out}}unavailable{{else}}available{{/if}}</td>
                <td>
                   <button type="button" onclick="editRow({{this.isbn}})">Edit</button>
                   <button type="button" onclick="deleteRow({{this.isbn}})">Delete</button>
