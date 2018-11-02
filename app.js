@@ -191,9 +191,6 @@ app.get('/author',function(req,res,next){
 app.post('/author',function(req,res,next){
    //check if adding a new item
    if(req.body.hasOwnProperty('add')){
-      console.log("ServerSide payload");
-      console.log(req.body);
-      
       //insert into database
       mysql.pool.query("INSERT INTO `author`(first_name, last_name) VALUES (?,?);",
          [req.body.fname, req.body.lname], function(err, result){
@@ -254,9 +251,9 @@ app.post('/author',function(req,res,next){
    }
   
    //check if deleting item
-   if(req.body.hasOwnProperty('deleteRow')){
+   if(req.body.hasOwnProperty('deleteRow')){   
       //delete from database
-      mysql.pool.query("DELETE FROM `reader` WHERE id=? ",
+      mysql.pool.query("DELETE FROM `author` WHERE id=? ",
          [req.body.id], function(err, result){
          if(err){
             next(err);

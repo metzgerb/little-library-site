@@ -38,9 +38,7 @@ function addRow(){
    var req = new XMLHttpRequest();
    var payload = {add:true};
    payload.fname = document.getElementById("formFname").value;
-   payload.lname = document.getElementById("formLname").value;
-   console.log("ClientSide payload");
-   console.log(payload);  
+   payload.lname = document.getElementById("formLname").value; 
    
    //reset form
    resetForm();
