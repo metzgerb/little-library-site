@@ -384,6 +384,83 @@ app.get('/shelf',function(req,res,next){
    });
 });
 
+//render POST for shelf
+app.post('/shelf',function(req,res,next){
+   //check if adding a new item
+   if(req.body.hasOwnProperty('add')){
+      //insert into database
+      mysql.pool.query("INSERT INTO `shelf`(location) VALUES (?);",
+         [req.body.loc], function(err, result){
+         if(err){
+            next(err);
+            return;
+         }
+         
+         //return row to add to HTML
+         mysql.pool.query('SELECT s.id, s.location, COUNT(b.isbn) AS books_on_shelf \
+                           FROM shelf s \
+                           LEFT JOIN book b ON s.id = b.sid \
+                           WHERE id=? \
+                           GROUP BY s.id \
+                           ORDER BY s.location;', [result.insertId], 
+         function(err, rows, fields){
+            if(err){
+               next(err);
+               return;
+            }
+                       
+            res.json(rows);
+         });
+      });
+   }
+  
+   //check if updating item
+   if(req.body.hasOwnProperty('updateRow')){
+      //update database
+      
+      mysql.pool.query('UPDATE `shelf` \
+                        SET location = ? \
+                        WHERE id = ?;',
+         [req.body.loc, req.body.id], function(err, result){
+         if(err){
+            next(err);
+            return;
+         }
+         
+         //return row to update in HTML
+         mysql.pool.query('SELECT s.id, s.location, COUNT(b.isbn) AS books_on_shelf \
+                           FROM shelf s \
+                           LEFT JOIN book b ON s.id = b.sid \
+                           WHERE id=? \
+                           GROUP BY s.id \
+                           ORDER BY s.location;', [req.body.id], 
+         function(err, rows, fields){
+            if(err){
+               next(err);
+               return;
+            }
+                        
+            res.json(rows);
+         });
+      });
+     
+   }
+  
+   //check if deleting item
+   if(req.body.hasOwnProperty('deleteRow')){   
+      //delete from database
+      mysql.pool.query("DELETE FROM `shelf` WHERE id =? ",
+         [req.body.id], function(err, result){
+         if(err){
+            next(err);
+            return;
+         } 
+         
+         res.json(result);
+      });
+   }
+});
+
 app.use(function(req,res){
   res.status(404);
   res.render('404');

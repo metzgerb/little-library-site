@@ -4,56 +4,36 @@ document.getElementById("resetBtn").addEventListener("click", resetForm);
 
 //hide error message element and reset error border
 document.getElementById("errorMsg").style.display = "none";
-document.getElementById("formName").style.borderColor = "#ddd";
-document.getElementById("formName").style.borderWidth = "1px";
+document.getElementById("formLocation").style.borderColor = "#ddd";
+document.getElementById("formLocation").style.borderWidth = "1px";
+
 
 //handles add
 function addRow(){
-   //check if name is blank
-   if(document.getElementById("formName").value == ""){
-      document.getElementById("errorMsg").textContent = "Name must not be blank!";
+   //reset error message element
+   document.getElementById("errorMsg").style.display = "none";
+   document.getElementById("formLocation").style.borderColor = "#ddd";
+   document.getElementById("formLocation").style.borderWidth = "1px";
+   
+   //check required fields
+   if(document.getElementById("formLocation").value == ""){
+      document.getElementById("errorMsg").textContent = "Fill in the required fields!";
       document.getElementById("errorMsg").style.display = "block";
-      document.getElementById("formName").style.borderColor = "red";
-      document.getElementById("formName").style.borderWidth = "2px";
+      
+      document.getElementById("formLocation").style.borderColor = "red";
+      document.getElementById("formLocation").style.borderWidth = "2px"; 
       return;
-   }
+   }   
    
    //create request
    var req = new XMLHttpRequest();
    var payload = {add:true};
-   payload.name = document.getElementById("formName").value;
-   
-   //check for empty reps
-   if(document.getElementById("formReps").value == "") {
-      payload.reps = null;
-   } else {
-      payload.reps = document.getElementById("formReps").value;
-   }
-   //check for empty weight
-   if (document.getElementById("formWeight").value == ""){
-      payload.weight = null;
-   } else {
-      payload.weight = document.getElementById("formWeight").value;
-   }
-   
-   //check for empty date
-   if(document.getElementById("formDate").value == ""){
-      payload.date = null;
-   } else {
-      payload.date = document.getElementById("formDate").value;
-   }
-   
-   //check for empty unit of weight
-   if((!document.getElementById("formLbs").checked && !document.getElementById("formKgs").checked)|| document.getElementById("formWeight").value == "") {
-      payload.lbs = null;
-   } else {
-      payload.lbs = document.getElementById("formLbs").checked;
-   }
+   payload.loc = document.getElementById("formLocation").value;
    
    //reset form
    resetForm();
    
-   req.open('POST', '/', true);
+   req.open('POST', '/shelf', true);
    req.setRequestHeader('Content-Type', 'application/json');
    req.addEventListener('load',function(){
       if(req.status >= 200 && req.status < 400){
@@ -71,38 +51,31 @@ function addRow(){
          newRow.id = response[0].id;
          
          //create cells in new row
-         for (var i = 0; i < 6; i++){
+         for (var i = 0; i < 3; i++){
             var tCellIn = document.createElement("td");
             newRow.appendChild(tCellIn);
          }
          
          //fill cells
          var rowCells = newRow.getElementsByTagName("td");
-         rowCells[0].textContent = response[0].date;
-         rowCells[1].textContent = response[0].name;
-         rowCells[2].textContent = response[0].reps;
-         rowCells[3].textContent = response[0].weight;
-         if(response[0].lbs == null){
-            rowCells[4].textContent = "";
-         } else if (response[0].lbs == true) {
-            rowCells[4].textContent = "lbs";
-         } else {
-            rowCells[4].textContent = "kgs";
-         }
+         rowCells[0].textContent = response[0].location;
+         rowCells[1].innerHTML = '<a href="/book/?l=' + response[0].id + '">' + response[0].books_on_shelf + '</a>';
                   
          //add edit button
          var editBtn = document.createElement("button");
          var eText = document.createTextNode("Edit");
          editBtn.appendChild(eText);
+         editBtn.type = "button";
          editBtn.onclick = function() {editRow(response[0].id)};
-         rowCells[5].appendChild(editBtn);
+         rowCells[2].appendChild(editBtn);
          
          //add delete button
          var deleteBtn = document.createElement("button");
          var dText = document.createTextNode("Delete");
          deleteBtn.appendChild(dText);
+         deleteBtn.type = "button";
          deleteBtn.onclick = function() {deleteRow(response[0].id)};
-         rowCells[5].appendChild(deleteBtn);
+         rowCells[2].appendChild(deleteBtn);
          
       } else {
          console.log("Error in network request: " + req.statusText);
@@ -127,7 +100,7 @@ function deleteRow(id){
    document.getElementById("resetBtn").textContent = "Reset";
    
    //call delete from database
-   req.open('POST', '/', true);
+   req.open('POST', '/shelf', true);
    req.setRequestHeader('Content-Type', 'application/json');
    req.addEventListener('load',function(){
       if(req.status >= 200 && req.status < 400){
@@ -152,31 +125,10 @@ function editRow(id){
    var rowToUpdate = document.getElementById(id);
    var rowCells = rowToUpdate.getElementsByTagName("td");
    
+   //populate form
    document.getElementById("formId").value = id;
-   document.getElementById("formName").value = rowCells[1].textContent;
-   document.getElementById("formReps").value= rowCells[2].textContent;
-   document.getElementById("formWeight").value= rowCells[3].textContent;
-   
-   //format date from MM-DD-YYYY to YYYY-MM-DD
-   if(rowCells[0].textContent!= ""){
-      var formattedDate = rowCells[0].textContent.split("-");
-      formattedDate = formattedDate[2] + '-' + formattedDate[0] + '-' + formattedDate[1];
-      document.getElementById("formDate").value= formattedDate;
-   } else {
-      document.getElementById("formDate").value = "";
-   }
-   
-   if(rowCells[4].textContent == "") {
-      document.getElementById("formLbs").checked = false;
-      document.getElementById("formKgs").checked = false;
-   } else if (rowCells[4].textContent == "lbs"){
-      document.getElementById("formLbs").checked = true;
-      document.getElementById("formKgs").checked = false;
-   } else {
-      document.getElementById("formLbs").checked = false;
-      document.getElementById("formKgs").checked = true;
-   }
-   
+   document.getElementById("formLocation").value = rowCells[0].textContent;
+      
    //change form buttons from add to updateRow
    document.getElementById("formBtn").removeEventListener("click",addRow);
    document.getElementById("formBtn").addEventListener("click", updateRow);
@@ -186,12 +138,19 @@ function editRow(id){
 
 //handles update
 function updateRow(){
+   //hide error message element
+   document.getElementById("errorMsg").style.display = "none";
+   document.getElementById("formLocation").style.borderColor = "#ddd";
+   document.getElementById("formLocation").style.borderWidth = "1px";
+   
    //check if name is blank
-   if(document.getElementById("formName").value == ""){
-      document.getElementById("errorMsg").textContent = "Workout name must not be blank!";
+   if(document.getElementById("formLocation").value == ""){
+      document.getElementById("errorMsg").textContent = "Fill in the required fields!";
       document.getElementById("errorMsg").style.display = "block";
-      document.getElementById("formName").style.borderColor = "red";
-      document.getElementById("formName").style.borderWidth = "2px";
+      
+      document.getElementById("formLocation").style.borderColor = "red";
+      document.getElementById("formLocation").style.borderWidth = "2px"; 
+
       return;
    }
    
@@ -199,38 +158,13 @@ function updateRow(){
    var req = new XMLHttpRequest();
    var payload = {updateRow:true};
    payload.id = document.getElementById("formId").value;
-   payload.name = document.getElementById("formName").value;
-   //check for empty reps
-   if(document.getElementById("formReps").value == "") {
-      payload.reps = null;
-   } else {
-      payload.reps = document.getElementById("formReps").value;
-   }
-   //check for empty weight
-   if (document.getElementById("formWeight").value == ""){
-      payload.weight = null;
-   } else {
-      payload.weight = document.getElementById("formWeight").value;
-   }
-   //check for empty date
-   if(document.getElementById("formDate").value == ""){
-      payload.date = null;
-   } else {
-      payload.date = document.getElementById("formDate").value;
-   }
-   
-   //check for empty unit of weight
-   if((!document.getElementById("formLbs").checked && !document.getElementById("formKgs").checked)|| document.getElementById("formWeight").value == "") {
-      payload.lbs = null;
-   } else {
-      payload.lbs = document.getElementById("formLbs").checked;
-   }
+   payload.loc = document.getElementById("formLocation").value;
    
    //reset form
    resetForm();
    
    //send update to DB
-   req.open('POST', '/', true);
+   req.open('POST', '/shelf', true);
    req.setRequestHeader('Content-Type', 'application/json');
    req.addEventListener('load',function(){
       if(req.status >= 200 && req.status < 400){
@@ -241,17 +175,8 @@ function updateRow(){
          
          //fill cells
          var rowCells = rowToUpdate.getElementsByTagName("td");
-         rowCells[0].textContent = response[0].date;
-         rowCells[1].textContent = response[0].name;
-         rowCells[2].textContent = response[0].reps;
-         rowCells[3].textContent = response[0].weight;
-         if(response[0].lbs == null){
-            rowCells[4].textContent = "";
-         } else if (response[0].lbs == true) {
-            rowCells[4].textContent = "lbs";
-         } else {
-            rowCells[4].textContent = "kgs";
-         }
+         rowCells[0].textContent = response[0].location;
+         rowCells[1].innerHTML = '<a href="/book/?l=' + response[0].id + '">' + response[0].books_on_shelf + '</a>';
          
       } else {
          console.log("Error in network request: " + req.statusText);
@@ -270,19 +195,14 @@ function updateRow(){
 function resetForm(){
    //clear out form fields
    document.getElementById("formId").value = "";
-   document.getElementById("formName").value = "";
-   document.getElementById("formReps").value= "";
-   document.getElementById("formWeight").value= "";
-   document.getElementById("formDate").value= "";
-   document.getElementById("formLbs").checked = false;
-   document.getElementById("formKgs").checked = false;
+   document.getElementById("formLocation").value = "";
+   
+   //change button text back to normal
+   document.getElementById("formBtn").textContent = "Add";
+   document.getElementById("resetBtn").textContent = "Reset";
    
    //hide error message element
    document.getElementById("errorMsg").style.display = "none";
-   document.getElementById("formName").style.borderColor = "#ddd";
-   document.getElementById("formName").style.borderWidth = "1px";
-}
-
-function checkOut(id){
-   window.location.href = '/reader/checkout/?r=' + id;
+   document.getElementById("formLocation").style.borderColor = "#ddd";
+   document.getElementById("formLocation").style.borderWidth = "1px";
 }
