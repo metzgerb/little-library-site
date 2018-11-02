@@ -1,6 +1,6 @@
 <div id="top-div">
-<h1>first name{{this.first_name}}, last name{{this.last_name}}</h1>
-<h3>({{this.id}}reader id)</h3>
+<h1>{{this.first_name}} {{this.last_name}}</h1>
+<h3>({{this.id}})</h3>
 <br>
 </div>
 <table>
@@ -12,24 +12,15 @@
       <th>Options</th>
    </thead>
    <tbody id="data-table">
-      <tr>
-         <td>isbn</td>
-         <td>title</td>
-         <td>comma separted list of authors</td>
-         <td>shelf</td>
-         <td>
-            <button type="button" onclick="checkIn({{this.isbn}}, {{this.id}})">Check In</button>
-         </td>
-      </tr>
       {{#if results}}
          {{#each results}}
             <tr id={{this.isbn}}>
                <td>{{this.isbn}}</td>
                <td>{{this.title}}</td>
                <td>{{this.authors}}</td>
-               <td>{{this.shelf}}</td>
+               <td>{{this.location}}</td>
                <td>
-                  <button type="button" onclick="checkIn({{this.isbn}}, {{this.id}})">Check In</button>
+                  <button type="button" onclick="checkIn({{this.isbn}})">Check In</button>
                </td>
             </tr>
          {{/each}}
@@ -37,4 +28,4 @@
    </tbody>
 </table>
 
-<script src="js/detail.js"></script>
+<script src="/js/detail.js"></script>

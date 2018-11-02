@@ -127,8 +127,6 @@ app.get('/book',function(req,res,next){
    });
 });
 
-
-
 //GET for reader section
 app.get('/reader',function(req,res,next){
    var context = {};
@@ -244,15 +242,81 @@ app.post('/reader',function(req,res,next){
 });
 
 //render GET for reader-detail (check in/out)
-app.get('/reader/detail',function(req,res,next){    
+app.get('/reader/detail',function(req,res,next){     
    var context = {};
-   res.render('reader-detail', context);
+   context.id = req.query.r;
+   mysql.pool.query('SELECT r.first_name, r.last_name \
+                     FROM reader r \
+                     WHERE r.id =?;', [context.id], 
+      function(err, rows, fields){
+         if(err){
+            next(err);
+            return;
+         }
+         context.first_name = rows[0].first_name;
+         context.last_name = rows[0].last_name;
+         mysql.pool.query('SELECT b.isbn, b.title, ba.authors, s.location \
+                           FROM book b \
+                           INNER JOIN shelf s ON b.sid = s.id \
+                           INNER JOIN (SELECT tmp.bid AS bid, GROUP_CONCAT(author) AS authors \
+                              FROM (SELECT b.bid, CONCAT(a.first_name, " ", a.last_name) AS author \
+                                 FROM book_author b \
+                                 INNER JOIN author a ON b.aid = a.id) AS tmp \
+                              GROUP BY tmp.bid) AS ba ON b.isbn = ba.bid \
+                        WHERE b.checked_out = ? \
+                        ORDER BY b.title;', [context.id], 
+         function(err, rows, fields){
+            if(err){
+               next(err);
+               return;
+            }
+
+            context.results = rows;
+            res.render('reader-detail', context);
+         });
+   });
+});
+
+app.post('/reader/detail',function(req,res,next){ 
+   //checking in
+   if(req.body.hasOwnProperty('checkIn')){   
+      //update database
+      mysql.pool.query("UPDATE `book` \
+                        SET checked_out = NULL \
+                        WHERE isbn = ?;",
+         [req.body.isbn], function(err, result){
+         if(err){
+            next(err);
+            return;
+         } 
+         
+         res.json(result);
+      });
+   }
 });
 
 //render GET for reader-checkout (checkout books)
 app.get('/reader/checkout',function(req,res,next){    
    var context = {};
+   mysql.pool.query('SELECT b.isbn, b.title, ba.authors, s.location \
+                     FROM book b \
+                     INNER JOIN shelf s ON b.sid = s.id \
+                     INNER JOIN (SELECT tmp.bid AS bid, GROUP_CONCAT(author) AS authors \
+                        FROM (SELECT b.bid, CONCAT(a.first_name, " ", a.last_name) AS author \
+                           FROM book_author b \
+                           INNER JOIN author a ON b.aid = a.id) AS tmp \
+                        GROUP BY tmp.bid) AS ba ON b.isbn = ba.bid \
+                  WHERE b.checked_out = ? \
+                  ORDER BY b.title;', [qParams.r], 
+   function(err, rows, fields){
+      if(err){
+         next(err);
+         return;
+      }
+      
+      context.results = rows;
    res.render('reader-checkout', context);
+   });
 });
 
 //GET for authors section
