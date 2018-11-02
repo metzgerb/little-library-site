@@ -286,6 +286,84 @@ app.get('/topic',function(req,res,next){
    });
 });
 
+//render POST for topic
+app.post('/topic',function(req,res,next){
+   //check if adding a new item
+   if(req.body.hasOwnProperty('add')){
+      //insert into database
+      mysql.pool.query("INSERT INTO `topic` (category, description) VALUES (?,?);",
+         [req.body.topic, req.body.desc], function(err, result){
+         if(err){
+            next(err);
+            return;
+         }
+         
+         //return row to add to HTML
+         mysql.pool.query('SELECT t.id, t.category, t.description, COUNT(b.isbn) AS books_on_topic \
+                           FROM topic t \
+                           LEFT JOIN book b ON t.id = b.tid \
+                           WHERE id=? \
+                           GROUP BY t.id \
+                           ORDER BY t.category;', [result.insertId], 
+         function(err, rows, fields){
+            if(err){
+               next(err);
+               return;
+            }
+                       
+            res.json(rows);
+         });
+      });
+   }
+  
+   //check if updating item
+   if(req.body.hasOwnProperty('updateRow')){
+      //update database
+      
+      mysql.pool.query('UPDATE `topic` \
+                        SET category = ?, \
+                           description = ? \
+                        WHERE id = ?;',
+         [req.body.topic, req.body.desc, req.body.id], function(err, result){
+         if(err){
+            next(err);
+            return;
+         }
+         
+         //return row to update in HTML
+         mysql.pool.query('SELECT t.id, t.category, t.description, COUNT(b.isbn) AS books_on_topic \
+                           FROM topic t \
+                           LEFT JOIN book b ON t.id = b.tid \
+                           WHERE id=? \
+                           GROUP BY t.id \
+                           ORDER BY t.category;', [req.body.id], 
+         function(err, rows, fields){
+            if(err){
+               next(err);
+               return;
+            }
+                        
+            res.json(rows);
+         });
+      });
+     
+   }
+  
+   //check if deleting item
+   if(req.body.hasOwnProperty('deleteRow')){   
+      //delete from database
+      mysql.pool.query("DELETE FROM `topic` WHERE id =? ",
+         [req.body.id], function(err, result){
+         if(err){
+            next(err);
+            return;
+         } 
+         
+         res.json(result);
+      });
+   }
+});
+
 //GET for shelf section
 app.get('/shelf',function(req,res,next){
    var context = {};

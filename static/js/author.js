@@ -76,6 +76,7 @@ function addRow(){
          var editBtn = document.createElement("button");
          var eText = document.createTextNode("Edit");
          editBtn.appendChild(eText);
+         editBtn.type = "button";
          editBtn.onclick = function() {editRow(response[0].id)};
          rowCells[3].appendChild(editBtn);
          
@@ -83,6 +84,7 @@ function addRow(){
          var deleteBtn = document.createElement("button");
          var dText = document.createTextNode("Delete");
          deleteBtn.appendChild(dText);
+         deleteBtn.type = "button";
          deleteBtn.onclick = function() {deleteRow(response[0].id)};
          rowCells[3].appendChild(deleteBtn);
          
