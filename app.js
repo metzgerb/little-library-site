@@ -20,34 +20,6 @@ app.get('/',function(req,res,next){
    res.render('home');
 });
 
-/*app.get('/',function(req,res,next){
-   var context = {};
-   mysql.pool.query('SELECT * FROM books', function(err, rows, fields){
-      if(err){
-         next(err);
-         return;
-      }
-      
-      context.results = rows;
-     
-      //perform formatting
-      for (var i = 0; i< context.results.length; i++){
-         //reformat dates
-         if (context.results[i].date != null){
-            context.results[i].date = moment(context.results[i].date).format('MM-DD-YYYY');
-         }
-         //add kgs to results
-         if(context.results[i].lbs == null) {
-            context.results[i].kgs = false;
-         } else {
-            context.results[i].kgs = !context.results[i].lbs;
-         }
-      }
-      
-      res.render('home', context);
-   });
-});*/
-
 //render POST for homepage
 /*app.post('/',function(req,res,next){
    //check if adding a new item
@@ -214,6 +186,85 @@ app.get('/author',function(req,res,next){
       res.render('author', context);
    });
 });
+
+//render POST for author
+app.post('/author',function(req,res,next){
+   //check if adding a new item
+   if(req.body.hasOwnProperty('add')){
+      //insert into database
+      mysql.pool.query("INSERT INTO `author`(first_name, last_name) VALUES (?,?);",
+         [req.body.fname, req.body.lname], function(err, result){
+         if(err){
+            next(err);
+            return;
+         }
+         
+         //return row to add to HTML
+         mysql.pool.query('SELECT a.id, a.first_name, a.last_name, COUNT(b.bid) AS books_by_author \
+                           FROM author a \
+                           LEFT JOIN book_author b ON a.id = b.aid \
+                           WHERE id=? \
+                           GROUP BY a.id \
+                           ORDER BY a.last_name, a.first_name', [result.insertId], 
+         function(err, rows, fields){
+            if(err){
+               next(err);
+               return;
+            }
+                       
+            res.json(rows);
+         });
+      });
+   }
+  
+   //check if updating item
+   if(req.body.hasOwnProperty('updateRow')){
+      //update database
+      
+      mysql.pool.query('UPDATE `author` \
+                        SET first_name = ?, \
+                           last_name = ? \
+                        WHERE id = ?;',
+         [req.body.fname, req.body.lname, req.body.id], function(err, result){
+         if(err){
+            next(err);
+            return;
+         }
+         
+         //return row to update in HTML
+         mysql.pool.query('SELECT a.id, a.first_name, a.last_name, COUNT(b.bid) AS books_by_author \
+                           FROM author a \
+                           LEFT JOIN book_author b ON a.id = b.aid \
+                           WHERE id=? \
+                           GROUP BY a.id \
+                           ORDER BY a.last_name, a.first_name', [req.body.id], 
+         function(err, rows, fields){
+            if(err){
+               next(err);
+               return;
+            }
+                        
+            res.json(rows);
+         });
+      });
+     
+   }
+  
+   //check if deleting item
+   if(req.body.hasOwnProperty('deleteRow')){
+      //delete from database
+      mysql.pool.query("DELETE FROM `reader` WHERE id=? ",
+         [req.body.id], function(err, result){
+         if(err){
+            next(err);
+            return;
+         } 
+         
+         res.json(result);
+      });
+   }
+});
+
 
 //GET for topics section
 app.get('/topic',function(req,res,next){
