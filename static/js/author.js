@@ -45,7 +45,7 @@ function addRow(){
    //reset form
    resetForm();
    
-   req.open('POST', '/', true);
+   req.open('POST', '/author', true);
    req.setRequestHeader('Content-Type', 'application/json');
    req.addEventListener('load',function(){
       if(req.status >= 200 && req.status < 400){
@@ -111,7 +111,7 @@ function deleteRow(id){
    document.getElementById("resetBtn").textContent = "Reset";
    
    //call delete from database
-   req.open('POST', '/', true);
+   req.open('POST', '/author', true);
    req.setRequestHeader('Content-Type', 'application/json');
    req.addEventListener('load',function(){
       if(req.status >= 200 && req.status < 400){
@@ -184,7 +184,7 @@ function updateRow(){
    resetForm();
    
    //send update to DB
-   req.open('POST', '/', true);
+   req.open('POST', '/author', true);
    req.setRequestHeader('Content-Type', 'application/json');
    req.addEventListener('load',function(){
       if(req.status >= 200 && req.status < 400){
