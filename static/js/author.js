@@ -4,8 +4,10 @@ document.getElementById("resetBtn").addEventListener("click", resetForm);
 
 //hide error message element and reset error border
 document.getElementById("errorMsg").style.display = "none";
-document.getElementById("formName").style.borderColor = "#ddd";
-document.getElementById("formName").style.borderWidth = "1px";
+document.getElementById("formFname").style.borderColor = "#ddd";
+document.getElementById("formFname").style.borderWidth = "1px";
+document.getElementById("formLname").style.borderColor = "#ddd";
+document.getElementById("formLname").style.borderWidth = "1px";
 
 //handles add
 function addRow(){
@@ -37,7 +39,9 @@ function addRow(){
    var payload = {add:true};
    payload.fname = document.getElementById("formFname").value;
    payload.lname = document.getElementById("formLname").value;
-     
+   console.log("ClientSide payload");
+   console.log(payload);  
+   
    //reset form
    resetForm();
    

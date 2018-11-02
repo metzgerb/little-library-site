@@ -191,6 +191,9 @@ app.get('/author',function(req,res,next){
 app.post('/author',function(req,res,next){
    //check if adding a new item
    if(req.body.hasOwnProperty('add')){
+      console.log("ServerSide payload");
+      console.log(req.body);
+      
       //insert into database
       mysql.pool.query("INSERT INTO `author`(first_name, last_name) VALUES (?,?);",
          [req.body.fname, req.body.lname], function(err, result){
