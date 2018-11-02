@@ -9,6 +9,13 @@ document.getElementById("formName").style.borderWidth = "1px";
 
 //handles add
 function addRow(){
+   //reset error message element
+   document.getElementById("errorMsg").style.display = "none";
+   document.getElementById("formFname").style.borderColor = "#ddd";
+   document.getElementById("formFname").style.borderWidth = "1px";
+   document.getElementById("formLname").style.borderColor = "#ddd";
+   document.getElementById("formLname").style.borderWidth = "1px";
+   
    //check if name is blank
    if(document.getElementById("formFname").value == "" || document.getElementById("formLname").value == ""){
       document.getElementById("errorMsg").textContent = "Fill in the required fields!";
@@ -139,6 +146,13 @@ function editRow(id){
 
 //handles update
 function updateRow(){
+   //hide error message element
+   document.getElementById("errorMsg").style.display = "none";
+   document.getElementById("formFname").style.borderColor = "#ddd";
+   document.getElementById("formFname").style.borderWidth = "1px";
+   document.getElementById("formLname").style.borderColor = "#ddd";
+   document.getElementById("formLname").style.borderWidth = "1px";
+   
    //check if name is blank
    if(document.getElementById("formFname").value == "" || document.getElementById("formLname").value == ""){
       document.getElementById("errorMsg").textContent = "Fill in the required fields!";
