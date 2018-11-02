@@ -3,57 +3,50 @@ document.getElementById("formBtn").addEventListener("click", addRow);
 document.getElementById("resetBtn").addEventListener("click", resetForm);
 
 //hide error message element and reset error border
-document.getElementById("errorMsg").style.display = "none";
-document.getElementById("formName").style.borderColor = "#ddd";
-document.getElementById("formName").style.borderWidth = "1px";
+errorReset();
 
 //handles add
 function addRow(){
-   //check if name is blank
-   if(document.getElementById("formName").value == ""){
-      document.getElementById("errorMsg").textContent = "Name must not be blank!";
+   //reset error message element
+   errorReset();
+   
+   //check required fields
+   if(document.getElementById("formFname").value == "" || document.getElementById("formLname").value == "" || document.getElementById("formPhone").value == "" || document.getElementById("formExpdate").value == ""){
+      document.getElementById("errorMsg").textContent = "Fill in the required fields!";
       document.getElementById("errorMsg").style.display = "block";
-      document.getElementById("formName").style.borderColor = "red";
-      document.getElementById("formName").style.borderWidth = "2px";
+      
+      if(document.getElementById("formFname").value == ""){
+         document.getElementById("formFname").style.borderColor = "red";
+         document.getElementById("formFname").style.borderWidth = "2px"; 
+      }
+      if(document.getElementById("formLname").value == ""){
+         document.getElementById("formLname").style.borderColor = "red";
+         document.getElementById("formLname").style.borderWidth = "2px"; 
+      }
+      if(document.getElementById("formPhone").value == ""){
+         document.getElementById("formPhone").style.borderColor = "red";
+         document.getElementById("formPhone").style.borderWidth = "2px"; 
+      }
+      if(document.getElementById("formExpdate").value == ""){
+         document.getElementById("formExpdate").style.borderColor = "red";
+         document.getElementById("formExpdate").style.borderWidth = "2px"; 
+      }
+      
       return;
-   }
+   }   
    
    //create request
    var req = new XMLHttpRequest();
    var payload = {add:true};
-   payload.name = document.getElementById("formName").value;
-   
-   //check for empty reps
-   if(document.getElementById("formReps").value == "") {
-      payload.reps = null;
-   } else {
-      payload.reps = document.getElementById("formReps").value;
-   }
-   //check for empty weight
-   if (document.getElementById("formWeight").value == ""){
-      payload.weight = null;
-   } else {
-      payload.weight = document.getElementById("formWeight").value;
-   }
-   
-   //check for empty date
-   if(document.getElementById("formDate").value == ""){
-      payload.date = null;
-   } else {
-      payload.date = document.getElementById("formDate").value;
-   }
-   
-   //check for empty unit of weight
-   if((!document.getElementById("formLbs").checked && !document.getElementById("formKgs").checked)|| document.getElementById("formWeight").value == "") {
-      payload.lbs = null;
-   } else {
-      payload.lbs = document.getElementById("formLbs").checked;
-   }
+   payload.fname = document.getElementById("formFname").value;
+   payload.lname = document.getElementById("formLname").value;
+   payload.phone = document.getElementById("formPhone").value;
+   payload.expdate = document.getElementById("formExpdate").value;   
    
    //reset form
    resetForm();
    
-   req.open('POST', '/', true);
+   req.open('POST', '/reader', true);
    req.setRequestHeader('Content-Type', 'application/json');
    req.addEventListener('load',function(){
       if(req.status >= 200 && req.status < 400){
@@ -71,38 +64,44 @@ function addRow(){
          newRow.id = response[0].id;
          
          //create cells in new row
-         for (var i = 0; i < 6; i++){
+         for (var i = 0; i < 7; i++){
             var tCellIn = document.createElement("td");
             newRow.appendChild(tCellIn);
          }
          
          //fill cells
          var rowCells = newRow.getElementsByTagName("td");
-         rowCells[0].textContent = response[0].date;
-         rowCells[1].textContent = response[0].name;
-         rowCells[2].textContent = response[0].reps;
-         rowCells[3].textContent = response[0].weight;
-         if(response[0].lbs == null){
-            rowCells[4].textContent = "";
-         } else if (response[0].lbs == true) {
-            rowCells[4].textContent = "lbs";
-         } else {
-            rowCells[4].textContent = "kgs";
-         }
+         rowCells[0].textContent = response[0].id;
+         rowCells[1].textContent = response[0].first_name;
+         rowCells[2].textContent = response[0].last_name;
+         rowCells[3].textContent = response[0].phone;
+         rowCells[4].textContent = response[0].card_expiration;
+         rowCells[5].innerHTML = '<a href="/reader/detail/?r=' + response[0].id + '">' + response[0].books_checked_out + '</a>';
                   
+         //add edit button
+         var checkoutBtn = document.createElement("button");
+         var eText = document.createTextNode("Check Out Books");
+         checkoutBtn.appendChild(eText);
+         checkoutBtn.type = "button";
+         checkoutBtn.style = "width: 150px;";
+         checkoutBtn.onclick = function() {checkOut(response[0].id)};
+         rowCells[6].appendChild(checkoutBtn);
+         
          //add edit button
          var editBtn = document.createElement("button");
          var eText = document.createTextNode("Edit");
          editBtn.appendChild(eText);
+         editBtn.type = "button";
          editBtn.onclick = function() {editRow(response[0].id)};
-         rowCells[5].appendChild(editBtn);
+         rowCells[6].appendChild(editBtn);
          
          //add delete button
          var deleteBtn = document.createElement("button");
          var dText = document.createTextNode("Delete");
          deleteBtn.appendChild(dText);
+         deleteBtn.type = "button";
          deleteBtn.onclick = function() {deleteRow(response[0].id)};
-         rowCells[5].appendChild(deleteBtn);
+         rowCells[6].appendChild(deleteBtn);
          
       } else {
          console.log("Error in network request: " + req.statusText);
@@ -127,7 +126,7 @@ function deleteRow(id){
    document.getElementById("resetBtn").textContent = "Reset";
    
    //call delete from database
-   req.open('POST', '/', true);
+   req.open('POST', '/reader', true);
    req.setRequestHeader('Content-Type', 'application/json');
    req.addEventListener('load',function(){
       if(req.status >= 200 && req.status < 400){
@@ -152,29 +151,19 @@ function editRow(id){
    var rowToUpdate = document.getElementById(id);
    var rowCells = rowToUpdate.getElementsByTagName("td");
    
+   //populate form
    document.getElementById("formId").value = id;
-   document.getElementById("formName").value = rowCells[1].textContent;
-   document.getElementById("formReps").value= rowCells[2].textContent;
-   document.getElementById("formWeight").value= rowCells[3].textContent;
+   document.getElementById("formFname").value = rowCells[1].textContent;
+   document.getElementById("formLname").value= rowCells[2].textContent;
+   document.getElementById("formPhone").value= rowCells[3].textContent;
    
    //format date from MM-DD-YYYY to YYYY-MM-DD
-   if(rowCells[0].textContent!= ""){
-      var formattedDate = rowCells[0].textContent.split("-");
+   if(rowCells[4].textContent!= ""){
+      var formattedDate = rowCells[4].textContent.split("-");
       formattedDate = formattedDate[2] + '-' + formattedDate[0] + '-' + formattedDate[1];
-      document.getElementById("formDate").value= formattedDate;
+      document.getElementById("formExpdate").value= formattedDate;
    } else {
-      document.getElementById("formDate").value = "";
-   }
-   
-   if(rowCells[4].textContent == "") {
-      document.getElementById("formLbs").checked = false;
-      document.getElementById("formKgs").checked = false;
-   } else if (rowCells[4].textContent == "lbs"){
-      document.getElementById("formLbs").checked = true;
-      document.getElementById("formKgs").checked = false;
-   } else {
-      document.getElementById("formLbs").checked = false;
-      document.getElementById("formKgs").checked = true;
+      document.getElementById("formExpdate").value = "";
    }
    
    //change form buttons from add to updateRow
@@ -186,12 +175,31 @@ function editRow(id){
 
 //handles update
 function updateRow(){
-   //check if name is blank
-   if(document.getElementById("formName").value == ""){
-      document.getElementById("errorMsg").textContent = "Workout name must not be blank!";
+   //hide error message element
+   errorReset();
+   
+   //check required fields
+   if(document.getElementById("formFname").value == "" || document.getElementById("formLname").value == "" || document.getElementById("formPhone").value == "" || document.getElementById("formExpdate").value == ""){
+      document.getElementById("errorMsg").textContent = "Fill in the required fields!";
       document.getElementById("errorMsg").style.display = "block";
-      document.getElementById("formName").style.borderColor = "red";
-      document.getElementById("formName").style.borderWidth = "2px";
+      
+      if(document.getElementById("formFname").value == ""){
+         document.getElementById("formFname").style.borderColor = "red";
+         document.getElementById("formFname").style.borderWidth = "2px"; 
+      }
+      if(document.getElementById("formLname").value == ""){
+         document.getElementById("formLname").style.borderColor = "red";
+         document.getElementById("formLname").style.borderWidth = "2px"; 
+      }
+      if(document.getElementById("formPhone").value == ""){
+         document.getElementById("formPhone").style.borderColor = "red";
+         document.getElementById("formPhone").style.borderWidth = "2px"; 
+      }
+      if(document.getElementById("formExpdate").value == ""){
+         document.getElementById("formExpdate").style.borderColor = "red";
+         document.getElementById("formExpdate").style.borderWidth = "2px"; 
+      }
+      
       return;
    }
    
@@ -199,38 +207,16 @@ function updateRow(){
    var req = new XMLHttpRequest();
    var payload = {updateRow:true};
    payload.id = document.getElementById("formId").value;
-   payload.name = document.getElementById("formName").value;
-   //check for empty reps
-   if(document.getElementById("formReps").value == "") {
-      payload.reps = null;
-   } else {
-      payload.reps = document.getElementById("formReps").value;
-   }
-   //check for empty weight
-   if (document.getElementById("formWeight").value == ""){
-      payload.weight = null;
-   } else {
-      payload.weight = document.getElementById("formWeight").value;
-   }
-   //check for empty date
-   if(document.getElementById("formDate").value == ""){
-      payload.date = null;
-   } else {
-      payload.date = document.getElementById("formDate").value;
-   }
-   
-   //check for empty unit of weight
-   if((!document.getElementById("formLbs").checked && !document.getElementById("formKgs").checked)|| document.getElementById("formWeight").value == "") {
-      payload.lbs = null;
-   } else {
-      payload.lbs = document.getElementById("formLbs").checked;
-   }
+   payload.fname = document.getElementById("formFname").value;
+   payload.lname = document.getElementById("formLname").value;
+   payload.phone = document.getElementById("formPhone").value;
+   payload.expdate = document.getElementById("formExpdate").value;
    
    //reset form
    resetForm();
    
    //send update to DB
-   req.open('POST', '/', true);
+   req.open('POST', '/reader', true);
    req.setRequestHeader('Content-Type', 'application/json');
    req.addEventListener('load',function(){
       if(req.status >= 200 && req.status < 400){
@@ -241,17 +227,12 @@ function updateRow(){
          
          //fill cells
          var rowCells = rowToUpdate.getElementsByTagName("td");
-         rowCells[0].textContent = response[0].date;
-         rowCells[1].textContent = response[0].name;
-         rowCells[2].textContent = response[0].reps;
-         rowCells[3].textContent = response[0].weight;
-         if(response[0].lbs == null){
-            rowCells[4].textContent = "";
-         } else if (response[0].lbs == true) {
-            rowCells[4].textContent = "lbs";
-         } else {
-            rowCells[4].textContent = "kgs";
-         }
+         rowCells[0].textContent = response[0].id;
+         rowCells[1].textContent = response[0].first_name;
+         rowCells[2].textContent = response[0].last_name;
+         rowCells[3].textContent = response[0].phone;
+         rowCells[4].textContent = response[0].card_expiration;
+         rowCells[5].innerHTML = '<a href="/reader/detail/?r=' + response[0].id + '">' + response[0].books_checked_out + '</a>';
          
       } else {
          console.log("Error in network request: " + req.statusText);
@@ -270,19 +251,35 @@ function updateRow(){
 function resetForm(){
    //clear out form fields
    document.getElementById("formId").value = "";
-   document.getElementById("formName").value = "";
-   document.getElementById("formReps").value= "";
-   document.getElementById("formWeight").value= "";
-   document.getElementById("formDate").value= "";
-   document.getElementById("formLbs").checked = false;
-   document.getElementById("formKgs").checked = false;
+   document.getElementById("formFname").value = "";
+   document.getElementById("formLname").value= "";
+   document.getElementById("formPhone").value = "";
+   document.getElementById("formExpdate").value= "";
+   
+   //change button text back to normal
+   document.getElementById("formBtn").textContent = "Add";
+   document.getElementById("resetBtn").textContent = "Reset";
    
    //hide error message element
-   document.getElementById("errorMsg").style.display = "none";
-   document.getElementById("formName").style.borderColor = "#ddd";
-   document.getElementById("formName").style.borderWidth = "1px";
+   errorReset();
 }
 
-function checkOut(id){
+function errorReset(){
+   document.getElementById("errorMsg").style.display = "none";
+   document.getElementById("formFname").style.borderColor = "#ddd";
+   document.getElementById("formFname").style.borderWidth = "1px";
+
+   document.getElementById("formLname").style.borderColor = "#ddd"; 
+   document.getElementById("formLname").style.borderWidth = "1px";
+
+   document.getElementById("formPhone").style.borderColor = "#ddd";
+   document.getElementById("formPhone").style.borderWidth = "1px";
+
+   document.getElementById("formExpdate").style.borderColor = "#ddd";
+   document.getElementById("formExpdate").style.borderWidth = "1px";
+   
+}
+
+function checkOut(id) {
    window.location.href = '/reader/checkout/?r=' + id;
 }

@@ -127,11 +127,7 @@ app.get('/book',function(req,res,next){
    });
 });
 
-//render GET for reader-checkout (checkout books)
-app.get('/reader/checkout',function(req,res,next){    
-   var context = {};
-   res.render('reader-checkout', context);
-});
+
 
 //GET for reader section
 app.get('/reader',function(req,res,next){
@@ -161,10 +157,102 @@ app.get('/reader',function(req,res,next){
    });
 });
 
+//render POST for reader
+app.post('/reader',function(req,res,next){
+   //check if adding a new item
+   if(req.body.hasOwnProperty('add')){
+      //insert into database
+      mysql.pool.query("INSERT INTO `reader`(first_name, last_name, phone, card_expiration) VALUES (?,?,?,?);",
+         [req.body.fname, req.body.lname, req.body.phone, req.body.expdate], function(err, result){
+         if(err){
+            next(err);
+            return;
+         }
+         
+         //return row to add to HTML
+         mysql.pool.query('SELECT r.id, r.first_name, r.last_name, r.phone, r.card_expiration, COUNT(b.isbn) AS books_checked_out \
+                           FROM reader r \
+                           LEFT JOIN book b ON r.id = b.checked_out \
+                           WHERE id=? \
+                           GROUP BY r.id \
+                           ORDER BY r.last_name, r.first_name;', [result.insertId], 
+         function(err, rows, fields){
+            if(err){
+               next(err);
+               return;
+            }
+            
+            //reformat date for html rendering
+            rows[0].card_expiration = moment(rows[0].card_expiration).format('MM-DD-YYYY');
+            
+            res.json(rows);
+         });
+      });
+   }
+  
+   //check if updating item
+   if(req.body.hasOwnProperty('updateRow')){
+      //update database
+      
+      mysql.pool.query('UPDATE `reader` \
+                        SET first_name = ?, \
+                           last_name = ?, \
+                           phone = ?, \
+                           card_expiration = ? \
+                        WHERE id = ?;',
+         [req.body.fname, req.body.lname, req.body.phone, req.body.expdate, req.body.id], function(err, result){
+         if(err){
+            next(err);
+            return;
+         }
+         
+         //return row to update in HTML
+         mysql.pool.query('SELECT r.id, r.first_name, r.last_name, r.phone, r.card_expiration, COUNT(b.isbn) AS books_checked_out \
+                           FROM reader r \
+                           LEFT JOIN book b ON r.id = b.checked_out \
+                           WHERE id=? \
+                           GROUP BY r.id \
+                           ORDER BY r.last_name, r.first_name;', [req.body.id], 
+         function(err, rows, fields){
+            if(err){
+               next(err);
+               return;
+            }
+            
+            //reformat date field for html rendering
+            rows[0].card_expiration = moment(rows[0].card_expiration).format('MM-DD-YYYY');
+            
+            res.json(rows);
+         });
+      });
+     
+   }
+  
+   //check if deleting item
+   if(req.body.hasOwnProperty('deleteRow')){   
+      //delete from database
+      mysql.pool.query("DELETE FROM `reader` WHERE id=? ",
+         [req.body.id], function(err, result){
+         if(err){
+            next(err);
+            return;
+         } 
+         
+         res.json(result);
+      });
+   }
+});
+
 //render GET for reader-detail (check in/out)
 app.get('/reader/detail',function(req,res,next){    
    var context = {};
    res.render('reader-detail', context);
+});
+
+//render GET for reader-checkout (checkout books)
+app.get('/reader/checkout',function(req,res,next){    
+   var context = {};
+   res.render('reader-checkout', context);
 });
 
 //GET for authors section
@@ -264,7 +352,6 @@ app.post('/author',function(req,res,next){
       });
    }
 });
-
 
 //GET for topics section
 app.get('/topic',function(req,res,next){
