@@ -31,19 +31,11 @@
       <th>Options</th>
    </thead>
    <tbody id="data-table">
-      <tr id={{this.id}}>
-               <td>location</td>
-               <td><a href="/book">Count books on shelf (hyperlink)</a></td>
-               <td>
-                  <button type="button" onclick="editRow({{this.id}})">Edit</button>
-                  <button type="button" onclick="deleteRow({{this.id}})">Delete</button>
-               </td>
-            </tr>
       {{#if results}}
          {{#each results}}
             <tr id={{this.id}}>
                <td>{{this.location}}</td>
-               <td>Add link to details maybe on topics or books on shelf</td>
+               <td><a href="/book/?l={{this.id}}">{{this.books_on_shelf}}</a></td>
                <td>
                   <button type="button" onclick="editRow({{this.id}})">Edit</button>
                   <button type="button" onclick="deleteRow({{this.id}})">Delete</button>

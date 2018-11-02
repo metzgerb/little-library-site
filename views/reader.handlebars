@@ -57,28 +57,15 @@
       <th>Options</th>
    </thead>
    <tbody id="data-table">
-      <tr>
-         <td>id</td>
-         <td>first_name</td>
-         <td>this.last_name</td>
-         <td>this.phone</td>
-         <td>this.card_expiration</td>
-         <td><a href="/reader/detail/?r={{this.id}}">count of books checked out</a></td>
-         <td>
-            <button type="button" onclick="checkOut({{this.id}})" style="width: 150px">Check Out Books</button>
-            <button type="button" onclick="editRow({{this.id}})">Edit</button>
-            <button type="button" onclick="deleteRow({{this.id}})">Delete</button>
-         </td>
-      </tr>
       {{#if results}}
          {{#each results}}
             <tr id={{this.id}}>
-               <td>{{this.id}} (<a href="/reader/detail/?r={{this.id}}">check in/out</a>)</td>
+               <td>{{this.id}}</td>
                <td>{{this.first_name}}</td>
                <td>{{this.last_name}}</td>
                <td>{{this.phone}}</td>
                <td>{{this.card_expiration}}</td>
-               <td>Add books checked out count</td>
+               <td><a href="/reader/detail/?r={{this.id}}">{{this.books_checked_out}}</a></td>
                <td>
                   <button type="button" onclick="checkOut({{this.id}})" style="width: 150px">Check Out Books</button>
                   <button type="button" onclick="editRow({{this.id}})">Edit</button>

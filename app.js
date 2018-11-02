@@ -164,7 +164,12 @@ app.get('/reader/checkout',function(req,res,next){
 //GET for reader section
 app.get('/reader',function(req,res,next){
    var context = {};
-   /*mysql.pool.query('SELECT * FROM books', function(err, rows, fields){
+   mysql.pool.query('SELECT r.id, r.first_name, r.last_name, r.phone, r.card_expiration, COUNT(b.isbn) AS books_checked_out \
+                     FROM reader r \
+                     LEFT JOIN book b ON r.id = b.checked_out \
+                     GROUP BY r.id \
+                     ORDER BY r.last_name, r.first_name;', 
+   function(err, rows, fields){
       if(err){
          next(err);
          return;
@@ -175,19 +180,13 @@ app.get('/reader',function(req,res,next){
       //perform formatting
       for (var i = 0; i< context.results.length; i++){
          //reformat dates
-         if (context.results[i].date != null){
-            context.results[i].date = moment(context.results[i].date).format('MM-DD-YYYY');
+         if (context.results[i].card_expiration != null){
+            context.results[i].card_expiration = moment(context.results[i].card_expiration).format('MM-DD-YYYY');
          }
-         //add kgs to results
-         if(context.results[i].lbs == null) {
-            context.results[i].kgs = false;
-         } else {
-            context.results[i].kgs = !context.results[i].lbs;
-         }
-      }*/
+      }
       
       res.render('reader', context);
-   //});
+   });
 });
 
 //render GET for reader-detail (check in/out)
@@ -199,88 +198,61 @@ app.get('/reader/detail',function(req,res,next){
 //GET for authors section
 app.get('/author',function(req,res,next){
    var context = {};
-   /*mysql.pool.query('SELECT * FROM books', function(err, rows, fields){
+   mysql.pool.query('SELECT a.id, a.first_name, a.last_name, COUNT(b.bid) AS books_by_author \
+                     FROM author a \
+                     LEFT JOIN book_author b ON a.id = b.aid \
+                     GROUP BY a.id \
+                     ORDER BY a.last_name, a.first_name;', 
+   function(err, rows, fields){
       if(err){
          next(err);
          return;
       }
       
       context.results = rows;
-     
-      //perform formatting
-      for (var i = 0; i< context.results.length; i++){
-         //reformat dates
-         if (context.results[i].date != null){
-            context.results[i].date = moment(context.results[i].date).format('MM-DD-YYYY');
-         }
-         //add kgs to results
-         if(context.results[i].lbs == null) {
-            context.results[i].kgs = false;
-         } else {
-            context.results[i].kgs = !context.results[i].lbs;
-         }
-      }*/
       
       res.render('author', context);
-   //});
+   });
 });
 
 //GET for topics section
 app.get('/topic',function(req,res,next){
    var context = {};
-   /*mysql.pool.query('SELECT * FROM books', function(err, rows, fields){
+   mysql.pool.query('SELECT t.id, t.category, t.description, COUNT(b.isbn) AS books_on_topic \
+                     FROM topic t \
+                     LEFT JOIN book b ON t.id = b.tid \
+                     GROUP BY t.id \
+                     ORDER BY t.category;', 
+   function(err, rows, fields){
       if(err){
          next(err);
          return;
       }
       
       context.results = rows;
-     
-      //perform formatting
-      for (var i = 0; i< context.results.length; i++){
-         //reformat dates
-         if (context.results[i].date != null){
-            context.results[i].date = moment(context.results[i].date).format('MM-DD-YYYY');
-         }
-         //add kgs to results
-         if(context.results[i].lbs == null) {
-            context.results[i].kgs = false;
-         } else {
-            context.results[i].kgs = !context.results[i].lbs;
-         }
-      }*/
-      
+          
       res.render('topic', context);
-   //});
+   });
 });
 
 //GET for shelf section
 app.get('/shelf',function(req,res,next){
    var context = {};
-   /*mysql.pool.query('SELECT * FROM books', function(err, rows, fields){
+   mysql.pool.query('SELECT s.id, s.location, COUNT(b.isbn) AS books_on_shelf \
+                     FROM shelf s \
+                     LEFT JOIN book b ON s.id = b.sid \
+                     GROUP BY s.id \
+                     ORDER BY s.location;', 
+   function(err, rows, fields){
       if(err){
          next(err);
          return;
       }
       
       context.results = rows;
-     
-      //perform formatting
-      for (var i = 0; i< context.results.length; i++){
-         //reformat dates
-         if (context.results[i].date != null){
-            context.results[i].date = moment(context.results[i].date).format('MM-DD-YYYY');
-         }
-         //add kgs to results
-         if(context.results[i].lbs == null) {
-            context.results[i].kgs = false;
-         } else {
-            context.results[i].kgs = !context.results[i].lbs;
-         }
-      }*/
-      
+          
       res.render('shelf', context);
-   //});
+   });
 });
 
 app.use(function(req,res){
