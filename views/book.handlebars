@@ -18,7 +18,9 @@
             <td width=250px>
                <select id="formTopic" name="topic"/>
                   <option disabled selected value></option>
-                  <option name="topic" value="topic id">Topic Category</option>
+                  {{#each topics}}
+                     <option name="topic" value="{{this.id}}">{{this.category}}</option>
+                  {{/each}}
                </select>
             </td>
             <td>
@@ -27,7 +29,9 @@
             <td width=250px>
                <select id="formShelf" name="shelf"/>
                   <option disabled selected value></option>
-                  <option name="shelf" value="shelf id">Shelf Location</option>
+                  {{#each shelves}}
+                     <option name="shelf" value="{{this.id}}">{{this.location}}</option>
+                  {{/each}}
                </select>
             </td>
          </tr>
@@ -49,8 +53,9 @@
             </td>
             <td rowspan="4">
                <select multiple id="formBookAuthor" name="author"/>
-                  <option name="author" value="author id">Author Name</option>
-                  <option name="author" value="author id2">Author Name2</option>
+                  {{#each authors}}
+                     <option name="author" value="{{this.id}}">{{this.name}}</option>
+                  {{/each}}
                </select>
             </td>
          </tr>
@@ -59,7 +64,7 @@
                <label for="description">Description: </label>
             </td>
             <td colspan="6" rowspan="3">
-               <input type="textarea" id="formdescription" name="weight"/>
+               <input type="textarea" id="formDescription" name="weight"/>
             </td>
          </tr>
          <tr>

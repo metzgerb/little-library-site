@@ -3,57 +3,69 @@ document.getElementById("formBtn").addEventListener("click", addRow);
 document.getElementById("resetBtn").addEventListener("click", resetForm);
 
 //hide error message element and reset error border
-document.getElementById("errorMsg").style.display = "none";
-document.getElementById("formName").style.borderColor = "#ddd";
-document.getElementById("formName").style.borderWidth = "1px";
+errorReset();
 
 //handles add
 function addRow(){
-   //check if name is blank
-   if(document.getElementById("formName").value == ""){
-      document.getElementById("errorMsg").textContent = "Name must not be blank!";
+   //hide error message element
+   errorReset();
+   
+   //check required fields
+   if(document.getElementById("formISBN").value == "" || document.getElementById("formTopic").value == "" 
+   || document.getElementById("formShelf").value == "" || document.getElementById("formDate").value == ""
+   || document.getElementById("formTitle").value == "" || document.getElementById("formBookAuthor").value == ""){
+      document.getElementById("errorMsg").textContent = "Fill in the required fields!";
       document.getElementById("errorMsg").style.display = "block";
-      document.getElementById("formName").style.borderColor = "red";
-      document.getElementById("formName").style.borderWidth = "2px";
+      
+      if(document.getElementById("formISBN").value == ""){
+         document.getElementById("formISBN").style.borderColor = "red";
+         document.getElementById("formISBN").style.borderWidth = "2px"; 
+      }
+      if(document.getElementById("formTopic").value == ""){
+         document.getElementById("formTopic").style.borderColor = "red";
+         document.getElementById("formTopic").style.borderWidth = "2px"; 
+      }
+      if(document.getElementById("formShelf").value == ""){
+         document.getElementById("formShelf").style.borderColor = "red";
+         document.getElementById("formShelf").style.borderWidth = "2px"; 
+      }
+      if(document.getElementById("formDate").value == ""){
+         document.getElementById("formDate").style.borderColor = "red";
+         document.getElementById("formDate").style.borderWidth = "2px"; 
+      }
+      if(document.getElementById("formTitle").value == ""){
+         document.getElementById("formTitle").style.borderColor = "red";
+         document.getElementById("formTitle").style.borderWidth = "2px"; 
+      }
+      if(document.getElementById("formBookAuthor").value == ""){
+         document.getElementById("formBookAuthor").style.borderColor = "red";
+         document.getElementById("formBookAuthor").style.borderWidth = "2px"; 
+      }
+      
       return;
    }
    
    //create request
    var req = new XMLHttpRequest();
    var payload = {add:true};
-   payload.name = document.getElementById("formName").value;
+   payload.isbn = document.getElementById("formISBN").value;
+   payload.topic = document.getElementById("formTopic").value;
+   payload.shelf = document.getElementById("formShelf").value;
+   payload.date = document.getElementById("formDate").value;
+   payload.title = document.getElementById("formTitle").value;
+   payload.authors = getSelectValues(document.getElementById("formBookAuthor"));
    
-   //check for empty reps
-   if(document.getElementById("formReps").value == "") {
-      payload.reps = null;
+   //check for empty description
+   if(document.getElementById("formDescription").value == "") {
+      payload.desc = null;
    } else {
-      payload.reps = document.getElementById("formReps").value;
-   }
-   //check for empty weight
-   if (document.getElementById("formWeight").value == ""){
-      payload.weight = null;
-   } else {
-      payload.weight = document.getElementById("formWeight").value;
-   }
-   
-   //check for empty date
-   if(document.getElementById("formDate").value == ""){
-      payload.date = null;
-   } else {
-      payload.date = document.getElementById("formDate").value;
-   }
-   
-   //check for empty unit of weight
-   if((!document.getElementById("formLbs").checked && !document.getElementById("formKgs").checked)|| document.getElementById("formWeight").value == "") {
-      payload.lbs = null;
-   } else {
-      payload.lbs = document.getElementById("formLbs").checked;
+      payload.desc = document.getElementById("formDescription").value;
    }
    
    //reset form
    resetForm();
    
-   req.open('POST', '/', true);
+   req.open('POST', '/book', true);
    req.setRequestHeader('Content-Type', 'application/json');
    req.addEventListener('load',function(){
       if(req.status >= 200 && req.status < 400){
@@ -68,41 +80,47 @@ function addRow(){
          
          //set id for new row
          var newRow = table.lastElementChild;
-         newRow.id = response[0].id;
+         newRow.id = response[0].isbn;
          
          //create cells in new row
-         for (var i = 0; i < 6; i++){
+         for (var i = 0; i < 9; i++){
             var tCellIn = document.createElement("td");
             newRow.appendChild(tCellIn);
          }
          
          //fill cells
          var rowCells = newRow.getElementsByTagName("td");
-         rowCells[0].textContent = response[0].date;
-         rowCells[1].textContent = response[0].name;
-         rowCells[2].textContent = response[0].reps;
-         rowCells[3].textContent = response[0].weight;
-         if(response[0].lbs == null){
-            rowCells[4].textContent = "";
-         } else if (response[0].lbs == true) {
-            rowCells[4].textContent = "lbs";
+         rowCells[0].textContent = response[0].isbn;
+         rowCells[1].textContent = response[0].title;
+         rowCells[2].textContent = response[0].published_date;
+         if(response[0].description == null){
+            rowCells[3].textContent = "";
          } else {
-            rowCells[4].textContent = "kgs";
+            rowCells[3].textContent = response[0].description;
+         }
+         
+         rowCells[4].textContent = response[0].authors;
+         rowCells[5].textContent = response[0].category;
+         rowCells[6].textContent = response[0].location;
+         if(response[0].checked_out == null){
+            rowCells[7].textContent = "available";
+         } else {
+            rowCells[7].textContent = "unavailable"
          }
                   
          //add edit button
          var editBtn = document.createElement("button");
          var eText = document.createTextNode("Edit");
          editBtn.appendChild(eText);
-         editBtn.onclick = function() {editRow(response[0].id)};
-         rowCells[5].appendChild(editBtn);
+         editBtn.onclick = function() {editRow(response[0].isbn)};
+         rowCells[8].appendChild(editBtn);
          
          //add delete button
          var deleteBtn = document.createElement("button");
          var dText = document.createTextNode("Delete");
          deleteBtn.appendChild(dText);
-         deleteBtn.onclick = function() {deleteRow(response[0].id)};
-         rowCells[5].appendChild(deleteBtn);
+         deleteBtn.onclick = function() {deleteRow(response[0].isbn)};
+         rowCells[8].appendChild(deleteBtn);
          
       } else {
          console.log("Error in network request: " + req.statusText);
@@ -113,10 +131,10 @@ function addRow(){
 }
 
 //handles delete
-function deleteRow(id){
+function deleteRow(isbn){
    var req = new XMLHttpRequest();
    var payload = {deleteRow:true};
-   payload.id = id;
+   payload.isbn = isbn;
    
    //reset form in case an edit was taking place on the record being deleted
    resetForm();
@@ -127,7 +145,7 @@ function deleteRow(id){
    document.getElementById("resetBtn").textContent = "Reset";
    
    //call delete from database
-   req.open('POST', '/', true);
+   req.open('POST', '/book', true);
    req.setRequestHeader('Content-Type', 'application/json');
    req.addEventListener('load',function(){
       if(req.status >= 200 && req.status < 400){
@@ -135,7 +153,7 @@ function deleteRow(id){
          var table = document.getElementById("data-table");
          
          //get row to delete
-         var rowToDelete = document.getElementById(id);
+         var rowToDelete = document.getElementById(isbn);
          table.removeChild(rowToDelete);
          
       } else {
@@ -148,7 +166,9 @@ function deleteRow(id){
 
 //primes update
 function editRow(id){
-   //get values from row
+   //alert since code is not finished yet - remove once implemented
+   alert("Edit functionality not implemented yet");
+   /*//get values from row
    var rowToUpdate = document.getElementById(id);
    var rowCells = rowToUpdate.getElementsByTagName("td");
    
@@ -181,17 +201,46 @@ function editRow(id){
    document.getElementById("formBtn").removeEventListener("click",addRow);
    document.getElementById("formBtn").addEventListener("click", updateRow);
    document.getElementById("formBtn").textContent = "Update";
-   document.getElementById("resetBtn").textContent = "Cancel";
+   document.getElementById("resetBtn").textContent = "Cancel";*/
 }
 
 //handles update
 function updateRow(){
-   //check if name is blank
-   if(document.getElementById("formName").value == ""){
-      document.getElementById("errorMsg").textContent = "Workout name must not be blank!";
+   //hide error message element
+   errorReset();
+   
+   //check required fields
+   if(document.getElementById("formISBN").value == "" || document.getElementById("formTopic").value == "" 
+   || document.getElementById("formShelf").value == "" || document.getElementById("formDate").value == ""
+   || document.getElementById("formTitle").value == "" || document.getElementById("formBookAuthor").value == ""){
+      document.getElementById("errorMsg").textContent = "Fill in the required fields!";
       document.getElementById("errorMsg").style.display = "block";
-      document.getElementById("formName").style.borderColor = "red";
-      document.getElementById("formName").style.borderWidth = "2px";
+      
+      if(document.getElementById("formISBN").value == ""){
+         document.getElementById("formISBN").style.borderColor = "red";
+         document.getElementById("formISBN").style.borderWidth = "2px"; 
+      }
+      if(document.getElementById("formTopic").value == ""){
+         document.getElementById("formTopic").style.borderColor = "red";
+         document.getElementById("formTopic").style.borderWidth = "2px"; 
+      }
+      if(document.getElementById("formShelf").value == ""){
+         document.getElementById("formShelf").style.borderColor = "red";
+         document.getElementById("formShelf").style.borderWidth = "2px"; 
+      }
+      if(document.getElementById("formDate").value == ""){
+         document.getElementById("formDate").style.borderColor = "red";
+         document.getElementById("formDate").style.borderWidth = "2px"; 
+      }
+      if(document.getElementById("formTitle").value == ""){
+         document.getElementById("formTitle").style.borderColor = "red";
+         document.getElementById("formTitle").style.borderWidth = "2px"; 
+      }
+      if(document.getElementById("formBookAuthor").value == ""){
+         document.getElementById("formBookAuthor").style.borderColor = "red";
+         document.getElementById("formBookAuthor").style.borderWidth = "2px"; 
+      }
+      
       return;
    }
    
@@ -269,20 +318,52 @@ function updateRow(){
 	
 function resetForm(){
    //clear out form fields
-   document.getElementById("formId").value = "";
-   document.getElementById("formName").value = "";
-   document.getElementById("formReps").value= "";
-   document.getElementById("formWeight").value= "";
+   document.getElementById("formISBN").value = "";
+   document.getElementById("formTopic").value = "";
+   document.getElementById("formShelf").value= "";
    document.getElementById("formDate").value= "";
-   document.getElementById("formLbs").checked = false;
-   document.getElementById("formKgs").checked = false;
+   document.getElementById("formTitle").value= "";
+   document.getElementById("formBookAuthor").value= "";
+   document.getElementById("formDescription").value= "";
    
-   //hide error message element
-   document.getElementById("errorMsg").style.display = "none";
-   document.getElementById("formName").style.borderColor = "#ddd";
-   document.getElementById("formName").style.borderWidth = "1px";
+   //hide error message element and reset error border
+   errorReset();
 }
 
-function checkOut(id){
-   window.location.href = '/reader/checkout/?r=' + id;
+function errorReset(){
+   document.getElementById("errorMsg").style.display = "none";
+   document.getElementById("formISBN").style.borderColor = "#ddd";
+   document.getElementById("formISBN").style.borderWidth = "1px";
+
+   document.getElementById("formTopic").style.borderColor = "#ddd"; 
+   document.getElementById("formTopic").style.borderWidth = "1px";
+
+   document.getElementById("formShelf").style.borderColor = "#ddd";
+   document.getElementById("formShelf").style.borderWidth = "1px";
+
+   document.getElementById("formDate").style.borderColor = "#ddd";
+   document.getElementById("formDate").style.borderWidth = "1px";
+   
+   document.getElementById("formTitle").style.borderColor = "#ddd";
+   document.getElementById("formTitle").style.borderWidth = "1px";
+   
+   document.getElementById("formBookAuthor").style.borderColor = "#ddd";
+   document.getElementById("formBookAuthor").style.borderWidth = "1px";
+}
+
+//modified helper function to get multiple select values into an array
+//source: https://stackoverflow.com/questions/5866169/how-to-get-all-selected-values-of-a-multiple-select-box
+function getSelectValues(select) {
+   var result = [];
+   var options = select && select.options;
+   var opt;
+
+   for (var i=0, iLen=options.length; i<iLen; i++) {
+      opt = options[i];
+
+      if (opt.selected) {
+         result.push(opt.value);
+      }
+   }
+   return result;
 }

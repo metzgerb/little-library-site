@@ -20,31 +20,102 @@ app.get('/',function(req,res,next){
    res.render('home');
 });
 
-//render POST for homepage
-/*app.post('/',function(req,res,next){
+app.get('/book',function(req,res,next){
+   var context = {};
+   //get topics
+   getTopics().then(function (rows) {
+      context.topics = rows;     
+      
+      //get shelves
+      getShelves().then(function(rows) {
+         context.shelves = rows;
+         
+         //get shelves
+         getAuthors().then(function(rows) {
+            context.authors = rows;
+            mysql.pool.query('SELECT b.isbn, b.title, b.published_date, b.description, ba.authors, t.category, s.location, b.checked_out \
+                     FROM book b \
+                     INNER JOIN topic t ON b.tid = t.id \
+                     INNER JOIN shelf s ON b.sid = s.id \
+                     INNER JOIN (SELECT tmp.bid AS bid, GROUP_CONCAT(author) AS authors \
+                                 FROM (SELECT b.bid, CONCAT(a.first_name, " ", a.last_name) AS author \
+                                       FROM book_author b \
+                                       INNER JOIN author a ON b.aid = a.id) AS tmp \
+                     GROUP BY tmp.bid) AS ba ON b.isbn = ba.bid \
+                     ORDER BY b.title', 
+            function(err, rows, fields){
+               if(err){
+                  next(err);
+                  return;
+               }
+      
+               context.results = rows;
+     
+               //perform formatting
+               for (var i = 0; i< context.results.length; i++){
+                  //reformat dates
+                  if (context.results[i].published_date != null){
+                     context.results[i].published_date = moment(context.results[i].published_date).format('MM-DD-YYYY');
+                  }
+               }
+      
+               res.render('book', context);
+            });
+         });
+      });          
+   });
+});
+
+//render POST for book
+app.post('/book',function(req,res,next){
    //check if adding a new item
    if(req.body.hasOwnProperty('add')){
       //insert into database
-      mysql.pool.query("INSERT INTO workouts (`name`,`reps`,`weight`,`date`,`lbs`) VALUES (?,?,?,?,?)",
-         [req.body.name, req.body.reps, req.body.weight, req.body.date, req.body.lbs], function(err, result){
+      mysql.pool.query("INSERT INTO `book`(isbn, title, description, published_date, checked_out, tid, sid) VALUES (?,?,?,?,NULL,?,?);",
+         [req.body.isbn, req.body.title, req.body.desc, req.body.date,req.body.topic, req.body.shelf], function(err, result){
          if(err){
             next(err);
             return;
          }
          
-         //return row to add to HTML
-         mysql.pool.query('SELECT * FROM workouts WHERE id=?', [result.insertId], function(err, rows, fields){
+         //create book-author nested arrays for inserts
+         var values = [];
+         for(var i = 0; i <(req.body.authors).length; i++){
+            values.push([req.body.isbn,req.body.authors[i]]);
+         }
+         
+         //add book author relationships
+         mysql.pool.query('INSERT INTO `book_author`(bid, aid) VALUES ?;',
+            [values], function(err, result){
             if(err){
                next(err);
                return;
             }
+            //return row to add to HTML
+            mysql.pool.query('SELECT b.isbn, b.title, b.published_date, b.description, ba.authors, t.category, s.location, b.checked_out \
+                     FROM book b \
+                     INNER JOIN topic t ON b.tid = t.id \
+                     INNER JOIN shelf s ON b.sid = s.id \
+                     INNER JOIN (SELECT tmp.bid AS bid, GROUP_CONCAT(author) AS authors \
+                                 FROM (SELECT b.bid, CONCAT(a.first_name, " ", a.last_name) AS author \
+                                       FROM book_author b \
+                                       INNER JOIN author a ON b.aid = a.id) AS tmp \
+                     GROUP BY tmp.bid) AS ba ON b.isbn = ba.bid \
+                     WHERE b.isbn = ? \
+                     ORDER BY b.title', [req.body.isbn], 
+            function(err, rows, fields){
+               if(err){
+                  next(err);
+                  return;
+               }
             
-            //reformat date if not null
-            if(rows[0].date != null){
-               rows[0].date = moment(rows[0].date).format('MM-DD-YYYY');
-            }
+               //reformat date if not null
+               if(rows[0].published_date != null){
+                  rows[0].published_date = moment(rows[0].published_date).format('MM-DD-YYYY');
+               }
             
-            res.json(rows);
+               res.json(rows);
+            });
          });
       });
    }
@@ -80,52 +151,27 @@ app.get('/',function(req,res,next){
   
    //check if deleting item
    if(req.body.hasOwnProperty('deleteRow')){
-      //delete from database
-      mysql.pool.query("DELETE FROM workouts WHERE id=? ",
-         [req.body.id], function(err, result){
+      //delete book-authors from database
+      mysql.pool.query("DELETE FROM `book_author` WHERE bid = ?;",
+         [req.body.isbn], function(err, result){
          if(err){
             next(err);
             return;
          } 
          
-         res.json(result);
+         //return row to update in HTML
+         mysql.pool.query('DELETE FROM `book` WHERE isbn = ?;', [req.body.isbn], function(err, rows, fields){
+            if(err){
+               next(err);
+               return;
+            }
+            
+            res.json(result);
+         });   
       });
    }
 });
-*/
 
-//GET for books section
-app.get('/book',function(req,res,next){
-   var context = {};
-   mysql.pool.query('SELECT b.isbn, b.title, b.published_date, b.description, ba.authors, t.category, s.location, b.checked_out \
-                     FROM book b \
-                     INNER JOIN topic t ON b.tid = t.id \
-                     INNER JOIN shelf s ON b.sid = s.id \
-                     INNER JOIN (SELECT tmp.bid AS bid, GROUP_CONCAT(author) AS authors \
-                                 FROM (SELECT b.bid, CONCAT(a.first_name, " ", a.last_name) AS author \
-                                       FROM book_author b \
-                                       INNER JOIN author a ON b.aid = a.id) AS tmp \
-                     GROUP BY tmp.bid) AS ba ON b.isbn = ba.bid \
-                     ORDER BY b.title', 
-   function(err, rows, fields){
-      if(err){
-         next(err);
-         return;
-      }
-      
-      context.results = rows;
-     
-      //perform formatting
-      for (var i = 0; i< context.results.length; i++){
-         //reformat dates
-         if (context.results[i].published_date != null){
-            context.results[i].published_date = moment(context.results[i].published_date).format('MM-DD-YYYY');
-         }
-      }
-      
-      res.render('book', context);
-   });
-});
 
 //GET for reader section
 app.get('/reader',function(req,res,next){
@@ -707,3 +753,45 @@ app.use(function(err, req, res, next){
 app.listen(app.get('port'), function(){
   console.log('Express started on http://flip3.engr.oregonstate.edu:' + app.get('port') + '; press Ctrl-C to terminate.');
 });
+
+function getTopics(){
+   return new Promise(function(resolve, reject) {
+      mysql.pool.query('SELECT t.id, t.category \
+                     FROM topic t \
+                     ORDER BY t.category;',
+      function(err, rows, fields){
+         if(err){
+            return reject(err);
+         }
+         resolve(rows);
+      });
+   });
+}
+
+function getShelves(){
+   return new Promise(function(resolve, reject) {
+      mysql.pool.query('SELECT s.id, s.location \
+                        FROM shelf s \
+                        ORDER BY s.location;',
+      function(err, rows, fields){
+         if(err){
+            return reject(err);
+         }
+         resolve(rows);
+      });
+   });
+}
+
+function getAuthors(){
+   return new Promise(function(resolve, reject) {
+      mysql.pool.query('SELECT a.id, CONCAT(a.first_name, " ", a.last_name) AS name \
+                        FROM author a \
+                        ORDER BY a.last_name, a.first_name;',
+      function(err, rows, fields){
+         if(err){
+            return reject(err);
+         }
+         resolve(rows);
+      });
+   });
+}

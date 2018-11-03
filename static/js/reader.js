@@ -161,7 +161,7 @@ function editRow(id){
    if(rowCells[4].textContent!= ""){
       var formattedDate = rowCells[4].textContent.split("-");
       formattedDate = formattedDate[2] + '-' + formattedDate[0] + '-' + formattedDate[1];
-      document.getElementById("formExpdate").value= formattedDate;
+      document.getElementById("formExpdate").value = formattedDate;
    } else {
       document.getElementById("formExpdate").value = "";
    }

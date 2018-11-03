@@ -1,11 +1,9 @@
-//add initial event handlers for form buttons
-document.getElementById("formBtn").addEventListener("click", addRow);
-document.getElementById("resetBtn").addEventListener("click", resetForm);
+//add initial event handler for form button
+document.getElementById("searchBtn").addEventListener("click", searchDB);
 
-//hide error message element and reset error border
-document.getElementById("errorMsg").style.display = "none";
-document.getElementById("formName").style.borderColor = "#ddd";
-document.getElementById("formName").style.borderWidth = "1px";
+function searchDB() {
+   alert("Search feature not implemented yet");
+}
 
 //handles add
 function addRow(){
