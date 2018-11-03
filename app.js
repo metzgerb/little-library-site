@@ -298,25 +298,105 @@ app.post('/reader/detail',function(req,res,next){
 //render GET for reader-checkout (checkout books)
 app.get('/reader/checkout',function(req,res,next){    
    var context = {};
-   mysql.pool.query('SELECT b.isbn, b.title, ba.authors, s.location \
-                     FROM book b \
-                     INNER JOIN shelf s ON b.sid = s.id \
-                     INNER JOIN (SELECT tmp.bid AS bid, GROUP_CONCAT(author) AS authors \
-                        FROM (SELECT b.bid, CONCAT(a.first_name, " ", a.last_name) AS author \
-                           FROM book_author b \
-                           INNER JOIN author a ON b.aid = a.id) AS tmp \
-                        GROUP BY tmp.bid) AS ba ON b.isbn = ba.bid \
-                  WHERE b.checked_out = ? \
-                  ORDER BY b.title;', [qParams.r], 
-   function(err, rows, fields){
-      if(err){
-         next(err);
-         return;
-      }
-      
-      context.results = rows;
-   res.render('reader-checkout', context);
+   context.id = req.query.r;
+   //check for search criteria
+   if(req.query.s){
+      context.searchTerm = 'Search results for "'+ req.query.s + '":';
+      queryParam = '%' + req.query.s + '%';
+   } else {
+      context.searchTerm = 'All available books:';
+   }
+   
+   mysql.pool.query('SELECT r.first_name, r.last_name \
+                     FROM reader r \
+                     WHERE r.id =?;', [context.id], 
+      function(err, rows, fields){
+         if(err){
+            next(err);
+            return;
+         }
+         context.first_name = rows[0].first_name;
+         context.last_name = rows[0].last_name;
+         //check if parameter provided
+         if(req.query.s) {
+            //return filtered list of books
+            mysql.pool.query('SELECT b.isbn, b.title, b.published_date, b.description, ba.authors, t.category, s.location \
+                              FROM book b \
+                              INNER JOIN topic t ON b.tid = t.id \
+                              INNER JOIN shelf s ON b.sid = s.id \
+                              INNER JOIN (SELECT tmp.bid AS bid, GROUP_CONCAT(author) AS authors \
+                                          FROM (SELECT b.bid, CONCAT(a.first_name, " ", a.last_name) AS author \
+                                                FROM book_author b \
+                                                INNER JOIN author a ON b.aid = a.id) AS tmp \
+                                 GROUP BY tmp.bid) AS ba ON b.isbn = ba.bid \
+                              WHERE b.checked_out IS NULL \
+                              AND CONCAT(b.isbn, b.title, b.published_date, b.description, ba.authors, t.category, s.location) LIKE ? \
+                              ORDER BY b.title;', [queryParam],  
+            function(err, rows, fields){
+               if(err){
+                  next(err);
+                  return;
+               }
+
+               context.results = rows;
+               //perform formatting
+               for (var i = 0; i< context.results.length; i++){
+                  //reformat dates
+                  if (context.results[i].published_date != null){
+                     context.results[i].published_date = moment(context.results[i].published_date).format('MM-DD-YYYY');
+                  }
+               }
+               res.render('reader-checkout', context);
+            });   
+         } else {
+            //return all available books
+            mysql.pool.query('SELECT b.isbn, b.title, b.published_date, b.description, ba.authors, t.category, s.location \
+                              FROM book b \
+                              INNER JOIN topic t ON b.tid = t.id \
+                              INNER JOIN shelf s ON b.sid = s.id \
+                              INNER JOIN (SELECT tmp.bid AS bid, GROUP_CONCAT(author) AS authors \
+                                          FROM (SELECT b.bid, CONCAT(a.first_name, " ", a.last_name) AS author \
+                                                FROM book_author b \
+                                                INNER JOIN author a ON b.aid = a.id) AS tmp \
+                                 GROUP BY tmp.bid) AS ba ON b.isbn = ba.bid \
+                              WHERE b.checked_out IS NULL \
+                              ORDER BY b.title;',  
+            function(err, rows, fields){
+               if(err){
+                  next(err);
+                  return;
+               }
+
+               context.results = rows;
+               //perform formatting
+               for (var i = 0; i< context.results.length; i++){
+                  //reformat dates
+                  if (context.results[i].published_date != null){
+                     context.results[i].published_date = moment(context.results[i].published_date).format('MM-DD-YYYY');
+                  }
+               }
+               res.render('reader-checkout', context);
+            });           
+         }
    });
+});
+
+app.post('/reader/checkout',function(req,res,next){ 
+   //checking out
+   if(req.body.hasOwnProperty('checkOut')){   
+      //update database
+      mysql.pool.query("UPDATE `book` \
+                        SET checked_out = ? \
+                        WHERE isbn = ?;",
+         [req.body.id, req.body.isbn], function(err, result){
+         if(err){
+            next(err);
+            return;
+         }
+         
+         res.json(result);
+      });
+   }
 });
 
 //GET for authors section
