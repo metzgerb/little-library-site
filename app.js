@@ -71,53 +71,69 @@ app.post('/book',function(req,res,next){
    //check if adding a new item
    if(req.body.hasOwnProperty('add')){
       
-      //insert into database
-      mysql.pool.query("INSERT INTO `book`(isbn, title, description, published_date, checked_out, tid, sid) VALUES (?,?,?,?,NULL,?,?);",
-         [req.body.isbn, req.body.title, req.body.desc, req.body.date,req.body.topic, req.body.shelf], function(err, result){
-         if(err){
-            next(err);
-            return;
-         }
-         
-         //create book-author nested arrays for inserts
-         var values = [];
-         for(var i = 0; i <(req.body.authors).length; i++){
-            values.push([req.body.isbn,req.body.authors[i]]);
-         }
-         
-         //add book author relationships
-         mysql.pool.query('INSERT INTO `book_author`(bid, aid) VALUES ?;',
-            [values], function(err, result){
+      //check if book is already added
+      mysql.pool.query("SELECT isbn FROM book WHERE isbn=?;", [req.body.isbn],
+         function(err, result){
             if(err){
                next(err);
                return;
             }
-            //return row to add to HTML
-            mysql.pool.query('SELECT b.isbn, b.title, b.published_date, b.description, ba.authors, t.category, s.location, b.checked_out \
-                     FROM book b \
-                     INNER JOIN topic t ON b.tid = t.id \
-                     INNER JOIN shelf s ON b.sid = s.id \
-                     INNER JOIN (SELECT tmp.bid AS bid, GROUP_CONCAT(author) AS authors \
-                                 FROM (SELECT b.bid, CONCAT(a.first_name, " ", a.last_name) AS author \
-                                       FROM book_author b \
-                                       INNER JOIN author a ON b.aid = a.id) AS tmp \
-                     GROUP BY tmp.bid) AS ba ON b.isbn = ba.bid \
-                     WHERE b.isbn = ? \
-                     ORDER BY b.title', [req.body.isbn], 
-            function(err, rows, fields){
-               if(err){
-                  next(err);
-                  return;
-               }
+            //check if book is found
+            if (result.length > 0) {
+               //book is found
+               var response = {error : "ISBN has already been entered!"};
+               res.json(response);
+            } else {
             
-               //reformat date if not null
-               if(rows[0].published_date != null){
-                  rows[0].published_date = moment(rows[0].published_date).format('MM-DD-YYYY');
-               }
+               //insert into database
+               mysql.pool.query("INSERT INTO `book`(isbn, title, description, published_date, checked_out, tid, sid) VALUES (?,?,?,?,NULL,?,?);",
+                  [req.body.isbn, req.body.title, req.body.desc, req.body.date,req.body.topic, req.body.shelf], function(err, result){
+                  if(err){
+                     next(err);
+                     return;
+                  }
+         
+                  //create book-author nested arrays for inserts
+                  var values = [];
+                  for(var i = 0; i <(req.body.authors).length; i++){
+                     values.push([req.body.isbn,req.body.authors[i]]);
+                  }
+         
+                  //add book author relationships
+                  mysql.pool.query('INSERT INTO `book_author`(bid, aid) VALUES ?;',
+                     [values], function(err, result){
+                     if(err){
+                        next(err);
+                        return;
+                     }
+                     //return row to add to HTML
+                     mysql.pool.query('SELECT b.isbn, b.title, b.published_date, b.description, ba.authors, t.category, s.location, b.checked_out \
+                              FROM book b \
+                              INNER JOIN topic t ON b.tid = t.id \
+                              INNER JOIN shelf s ON b.sid = s.id \
+                              INNER JOIN (SELECT tmp.bid AS bid, GROUP_CONCAT(author) AS authors \
+                                          FROM (SELECT b.bid, CONCAT(a.first_name, " ", a.last_name) AS author \
+                                                FROM book_author b \
+                                                INNER JOIN author a ON b.aid = a.id) AS tmp \
+                              GROUP BY tmp.bid) AS ba ON b.isbn = ba.bid \
+                              WHERE b.isbn = ? \
+                              ORDER BY b.title', [req.body.isbn], 
+                     function(err, rows, fields){
+                        if(err){
+                           next(err);
+                           return;
+                        }
             
-               res.json(rows);
-            });
-         });
+                        //reformat date if not null
+                        if(rows[0].published_date != null){
+                           rows[0].published_date = moment(rows[0].published_date).format('MM-DD-YYYY');
+                        }
+            
+                        res.json(rows);
+                     });
+                  });
+               });
+            }
       });
    }
   

@@ -71,6 +71,12 @@ function addRow(){
       if(req.status >= 200 && req.status < 400){
          var response = JSON.parse(req.responseText);
          
+         //check if error was returned
+         if(response.hasOwnProperty('error')) {
+            alert(response['error']);
+            return;
+         }
+         
          //build table 
          var table = document.getElementById("data-table");
          
