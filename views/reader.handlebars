@@ -65,7 +65,7 @@
                <td>{{this.last_name}}</td>
                <td>{{this.phone}}</td>
                <td>{{this.card_expiration}}</td>
-               <td><a href="/reader/detail/?r={{this.id}}">{{this.books_checked_out}}</a></td>
+               <td><a href="/reader/detail/?r={{this.id}}">{{this.books_checked_out}} (Check In)</a></td>
                <td>
                   <button type="button" onclick="checkOut({{this.id}})" style="width: 150px">Check Out Books</button>
                   <button type="button" onclick="editRow({{this.id}})">Edit</button>

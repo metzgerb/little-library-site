@@ -70,6 +70,7 @@ app.get('/book',function(req,res,next){
 app.post('/book',function(req,res,next){
    //check if adding a new item
    if(req.body.hasOwnProperty('add')){
+      
       //insert into database
       mysql.pool.query("INSERT INTO `book`(isbn, title, description, published_date, checked_out, tid, sid) VALUES (?,?,?,?,NULL,?,?);",
          [req.body.isbn, req.body.title, req.body.desc, req.body.date,req.body.topic, req.body.shelf], function(err, result){

@@ -64,7 +64,7 @@ function addRow(){
    
    //reset form
    resetForm();
-   
+     
    req.open('POST', '/book', true);
    req.setRequestHeader('Content-Type', 'application/json');
    req.addEventListener('load',function(){
@@ -201,7 +201,11 @@ function editRow(id){
    document.getElementById("formBtn").removeEventListener("click",addRow);
    document.getElementById("formBtn").addEventListener("click", updateRow);
    document.getElementById("formBtn").textContent = "Update";
-   document.getElementById("resetBtn").textContent = "Cancel";*/
+   document.getElementById("resetBtn").textContent = "Cancel";
+   
+   //set focus to first form field
+   document.getElementById("formISBN").focus();
+   */
 }
 
 //handles update

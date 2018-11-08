@@ -143,6 +143,9 @@ function editRow(id){
    document.getElementById("formBtn").addEventListener("click", updateRow);
    document.getElementById("formBtn").textContent = "Update";
    document.getElementById("resetBtn").textContent = "Cancel";
+   
+   //set focus to first form field
+   document.getElementById("formTopic").focus();
 }
 
 //handles update
