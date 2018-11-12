@@ -33,6 +33,42 @@ app.get('/book',function(req,res,next){
          //get shelves
          getAuthors().then(function(rows) {
             context.authors = rows;
+            var conditions = [];
+            var values = [];
+            var author = [];
+            
+            //check for author criteria
+            if (typeof req.query.a !== 'undefined') {
+               author.push("a.id = ?");
+               values.push(parseInt(req.query.a));
+            }
+            
+            //check for search criteria
+            if (typeof req.query.s !== 'undefined') {
+               conditions.push('CONCAT(b.isbn, b.title, b.published_date, b.description, ba.authors, t.category, s.location) LIKE ?');
+               values.push("%" + req.query.s + "%");
+            }
+            
+            //check for shelf criteria
+            if (typeof req.query.l !== 'undefined') {
+               conditions.push("s.id = ?");
+               values.push(parseInt(req.query.l));
+            }
+            
+            //check for topic criteria
+            if (typeof req.query.t !== 'undefined') {
+               conditions.push("t.id = ?");
+               values.push(parseInt(req.query.t));
+            }
+            
+            var whereClause = {
+               author: author.length ?
+                  author.join(' AND ') : '1',
+               where: conditions.length ?
+                  conditions.join(' AND ') : '1',
+               values: values
+            };
+
             mysql.pool.query('SELECT b.isbn, b.title, b.published_date, b.description, ba.authors, t.category, s.location, b.checked_out \
                      FROM book b \
                      INNER JOIN topic t ON b.tid = t.id \
@@ -40,9 +76,11 @@ app.get('/book',function(req,res,next){
                      INNER JOIN (SELECT tmp.bid AS bid, GROUP_CONCAT(author) AS authors \
                                  FROM (SELECT b.bid, CONCAT(a.first_name, " ", a.last_name) AS author \
                                        FROM book_author b \
-                                       INNER JOIN author a ON b.aid = a.id) AS tmp \
-                     GROUP BY tmp.bid) AS ba ON b.isbn = ba.bid \
-                     ORDER BY b.title', 
+                                       INNER JOIN author a ON b.aid = a.id \
+                                       WHERE ' + whereClause.author + ') AS tmp \
+                                 GROUP BY tmp.bid) AS ba ON b.isbn = ba.bid ' +
+                     'WHERE ' + whereClause.where + ' ' +
+                     'ORDER BY b.title', whereClause.values,
             function(err, rows, fields){
                if(err){
                   next(err);
@@ -189,33 +227,63 @@ app.post('/book',function(req,res,next){
    }
 });
 
-
 //GET for reader section
 app.get('/reader',function(req,res,next){
    var context = {};
-   mysql.pool.query('SELECT r.id, r.first_name, r.last_name, r.phone, r.card_expiration, COUNT(b.isbn) AS books_checked_out \
-                     FROM reader r \
-                     LEFT JOIN book b ON r.id = b.checked_out \
-                     GROUP BY r.id \
-                     ORDER BY r.last_name, r.first_name;', 
-   function(err, rows, fields){
-      if(err){
-         next(err);
-         return;
-      }
-      
-      context.results = rows;
-     
-      //perform formatting
-      for (var i = 0; i< context.results.length; i++){
-         //reformat dates
-         if (context.results[i].card_expiration != null){
-            context.results[i].card_expiration = moment(context.results[i].card_expiration).format('MM-DD-YYYY');
+   
+   //check for search criteria
+   if (typeof req.query.s !== 'undefined') {
+      var value = '%' + req.query.s + '%';
+      mysql.pool.query('SELECT r.id, r.first_name, r.last_name, r.phone, r.card_expiration, COUNT(b.isbn) AS books_checked_out \
+                        FROM reader r \
+                        LEFT JOIN book b ON r.id = b.checked_out \
+                        WHERE CONCAT(r.id, r.first_name, " ", r.last_name, r.phone) LIKE ? \
+                        GROUP BY r.id \
+                        ORDER BY r.last_name, r.first_name;', [value],
+      function(err, rows, fields){
+         if(err){
+            next(err);
+            return;
          }
-      }
       
-      res.render('reader', context);
-   });
+         context.results = rows;
+     
+         //perform formatting
+         for (var i = 0; i< context.results.length; i++){
+            //reformat dates
+            if (context.results[i].card_expiration != null){
+               context.results[i].card_expiration = moment(context.results[i].card_expiration).format('MM-DD-YYYY');
+            }
+         }
+      
+         res.render('reader', context);
+      });
+   } else {
+      //no search criteria
+      mysql.pool.query('SELECT r.id, r.first_name, r.last_name, r.phone, r.card_expiration, COUNT(b.isbn) AS books_checked_out \
+                        FROM reader r \
+                        LEFT JOIN book b ON r.id = b.checked_out \
+                        GROUP BY r.id \
+                        ORDER BY r.last_name, r.first_name;', 
+      function(err, rows, fields){
+         if(err){
+            next(err);
+            return;
+         }
+      
+         context.results = rows;
+     
+         //perform formatting
+         for (var i = 0; i< context.results.length; i++){
+            //reformat dates
+            if (context.results[i].card_expiration != null){
+               context.results[i].card_expiration = moment(context.results[i].card_expiration).format('MM-DD-YYYY');
+            }
+         }
+      
+         res.render('reader', context);
+      });
+   }
 });
 
 //render POST for reader
@@ -465,21 +533,44 @@ app.post('/reader/checkout',function(req,res,next){
 //GET for authors section
 app.get('/author',function(req,res,next){
    var context = {};
-   mysql.pool.query('SELECT a.id, a.first_name, a.last_name, COUNT(b.bid) AS books_by_author \
-                     FROM author a \
-                     LEFT JOIN book_author b ON a.id = b.aid \
-                     GROUP BY a.id \
-                     ORDER BY a.last_name, a.first_name;', 
-   function(err, rows, fields){
-      if(err){
-         next(err);
-         return;
-      }
+   
+   //check for search criteria
+   if (typeof req.query.s !== 'undefined') {
+      var value = '%' + req.query.s + '%';
+      mysql.pool.query('SELECT a.id, a.first_name, a.last_name, COUNT(b.bid) AS books_by_author \
+                        FROM author a \
+                        LEFT JOIN book_author b ON a.id = b.aid \
+                        WHERE CONCAT(a.first_name, " ", a.last_name) LIKE ? \
+                        GROUP BY a.id \
+                        ORDER BY a.last_name, a.first_name;', [value],
+      function(err, rows, fields){
+         if(err){
+            next(err);
+            return;
+         }
       
-      context.results = rows;
+         context.results = rows;
       
-      res.render('author', context);
-   });
+         res.render('author', context);
+      });
+   } else {
+      //no search criteria
+      mysql.pool.query('SELECT a.id, a.first_name, a.last_name, COUNT(b.bid) AS books_by_author \
+                        FROM author a \
+                        LEFT JOIN book_author b ON a.id = b.aid \
+                        GROUP BY a.id \
+                        ORDER BY a.last_name, a.first_name;', 
+      function(err, rows, fields){
+         if(err){
+            next(err);
+            return;
+         }
+      
+         context.results = rows;
+      
+         res.render('author', context);
+      });
+   }
 });
 
 //render POST for author
@@ -563,21 +654,44 @@ app.post('/author',function(req,res,next){
 //GET for topics section
 app.get('/topic',function(req,res,next){
    var context = {};
-   mysql.pool.query('SELECT t.id, t.category, t.description, COUNT(b.isbn) AS books_on_topic \
-                     FROM topic t \
-                     LEFT JOIN book b ON t.id = b.tid \
-                     GROUP BY t.id \
-                     ORDER BY t.category;', 
-   function(err, rows, fields){
-      if(err){
-         next(err);
-         return;
-      }
+   
+   //check for search criteria
+   if (typeof req.query.s !== 'undefined') {
+      var value = '%' + req.query.s + '%';
+      mysql.pool.query('SELECT t.id, t.category, t.description, COUNT(b.isbn) AS books_on_topic \
+                        FROM topic t \
+                        LEFT JOIN book b ON t.id = b.tid \
+                        WHERE CONCAT(t.category, t.description) LIKE ? \
+                        GROUP BY t.id \
+                        ORDER BY t.category;', [value],
+      function(err, rows, fields){
+         if(err){
+            next(err);
+            return;
+         }
       
-      context.results = rows;
+         context.results = rows;
           
-      res.render('topic', context);
-   });
+         res.render('topic', context);
+      });
+   } else {
+      //no search criteria
+      mysql.pool.query('SELECT t.id, t.category, t.description, COUNT(b.isbn) AS books_on_topic \
+                        FROM topic t \
+                        LEFT JOIN book b ON t.id = b.tid \
+                        GROUP BY t.id \
+                        ORDER BY t.category;', 
+      function(err, rows, fields){
+         if(err){
+            next(err);
+            return;
+         }  
+      
+         context.results = rows;
+          
+         res.render('topic', context);
+      });  
+   }   
 });
 
 //render POST for topic
@@ -833,30 +947,4 @@ function getAuthors(){
          resolve(rows);
       });
    });
-}
-
-function buildConditions(params) {
-  var conditions = [];
-  var values = [];
-
-  if (typeof params.s !== 'undefined') {
-    conditions.push(concatString + " LIKE ?");
-    values.push("%" + params.s + "%");
-  }
-
-  if (typeof params.a !== 'undefined') {
-    conditions.push("aid = ?");
-    values.push(parseInt(params.a));
-  }
-  
-  if (typeof params.a !== 'undefined') {
-    conditions.push("aid = ?");
-    values.push(parseInt(params.a));
-  }
-
-  return {
-    where: conditions.length ?
-             conditions.join(' AND ') : '1',
-    values: values
-  };
 }
