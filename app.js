@@ -661,21 +661,43 @@ app.post('/topic',function(req,res,next){
 //GET for shelf section
 app.get('/shelf',function(req,res,next){
    var context = {};
-   mysql.pool.query('SELECT s.id, s.location, COUNT(b.isbn) AS books_on_shelf \
-                     FROM shelf s \
-                     LEFT JOIN book b ON s.id = b.sid \
-                     GROUP BY s.id \
-                     ORDER BY s.location;', 
-   function(err, rows, fields){
-      if(err){
-         next(err);
-         return;
-      }
+
+   if (typeof req.query.s !== 'undefined') {
+      var value = '%' + req.query.s + '%';
+      mysql.pool.query('SELECT s.id, s.location, COUNT(b.isbn) AS books_on_shelf \
+                        FROM shelf s \
+                        LEFT JOIN book b ON s.id = b.sid \
+                        WHERE s.location LIKE ? \
+                        GROUP BY s.id \
+                        ORDER BY s.location;', [value],
+      function(err, rows, fields){
+         if(err){
+            next(err);
+            return;
+         }
       
-      context.results = rows;
+         context.results = rows;
+         
+         res.render('shelf', context);
+      });
+   } else {
+         
+      mysql.pool.query('SELECT s.id, s.location, COUNT(b.isbn) AS books_on_shelf \
+                        FROM shelf s \
+                        LEFT JOIN book b ON s.id = b.sid \
+                        GROUP BY s.id \
+                        ORDER BY s.location;', 
+      function(err, rows, fields){
+         if(err){
+            next(err);
+            return;
+         }
+      
+         context.results = rows;
           
-      res.render('shelf', context);
-   });
+         res.render('shelf', context);
+      });
+   }   
 });
 
 //render POST for shelf
@@ -811,4 +833,30 @@ function getAuthors(){
          resolve(rows);
       });
    });
+}
+
+function buildConditions(params) {
+  var conditions = [];
+  var values = [];
+
+  if (typeof params.s !== 'undefined') {
+    conditions.push(concatString + " LIKE ?");
+    values.push("%" + params.s + "%");
+  }
+
+  if (typeof params.a !== 'undefined') {
+    conditions.push("aid = ?");
+    values.push(parseInt(params.a));
+  }
+  
+  if (typeof params.a !== 'undefined') {
+    conditions.push("aid = ?");
+    values.push(parseInt(params.a));
+  }
+
+  return {
+    where: conditions.length ?
+             conditions.join(' AND ') : '1',
+    values: values
+  };
 }
