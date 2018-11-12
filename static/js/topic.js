@@ -120,6 +120,11 @@ function deleteRow(id){
          table.removeChild(rowToDelete);
          
       } else {
+         //check number of books
+         var rowClicked = document.getElementById(id);
+         if(parseInt(rowClicked.children[2].children[0].text) > 0 );
+         alert("You cannot delete a topic that has books!");
+         
          console.log("Error in network request: " + req.statusText);
       }});
       

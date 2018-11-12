@@ -112,6 +112,11 @@ function deleteRow(id){
          table.removeChild(rowToDelete);
          
       } else {
+         //check number of books
+         var rowClicked = document.getElementById(id);
+         if(parseInt(rowClicked.children[1].children[0].text) > 0 );
+         alert("You cannot delete a shelf that has books on it!");
+         
          console.log("Error in network request: " + req.statusText);
       }});
       
