@@ -108,6 +108,8 @@ app.get('/book',function(req,res,next){
 app.post('/book',function(req,res,next){
    //check for edit priming request
    if(req.body.hasOwnProperty('edit')){
+      var result = {};
+      
       //get topic and shelf from book table
       mysql.pool.query('SELECT b.tid, b.sid \
                         FROM book b \
@@ -117,9 +119,30 @@ app.post('/book',function(req,res,next){
                next(err);
                return;
             }
-            //add author async call and store in context
-            res.json(rows);
-         });
+            
+            result.topic = rows[0].tid;
+            result.shelf = rows[0].sid;
+            
+            //add authors and store in result
+            mysql.pool.query('SELECT ba.aid \
+                        FROM book_author ba \
+                        WHERE ba.bid = ?;', [req.body.isbn],
+            function(err, rows, fields){
+               if(err){
+                  next(err);
+                  return;
+               }
+               
+               result.authors = [];
+               
+               for(var i = 0; i< rows.length; i++) {
+                  result.authors.push(rows[i].aid);
+               }
+               
+               console.log(result);
+               res.json(result);
+            });
+      });
    }
    //check if adding a new item
    if(req.body.hasOwnProperty('add')){

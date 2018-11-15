@@ -195,18 +195,22 @@ function editRow(id){
    var req = new XMLHttpRequest();
    var payload = {edit:true};
    payload.isbn = id;
-   console.log(payload);
+
    req.open('POST', '/book', true);
    req.setRequestHeader('Content-Type', 'application/json');
    req.addEventListener('load',function(){
       if(req.status >= 200 && req.status < 400){
          var response = JSON.parse(req.responseText);
+         console.log(response);
          
          //set value for topic
+         setSelectValue(document.getElementById("formTopic"),response.topic, true);
          
          //set value for shelf
+         setSelectValue(document.getElementById("formShelf"),response.shelf, true);
          
          //set values for author 
+         setSelectValue(document.getElementById("formBookAuthor"), response.authors, false);
          
          //change form buttons from add to updateRow
          document.getElementById("formBtn").removeEventListener("click",addRow);
@@ -268,59 +272,51 @@ function updateRow(){
    //create request
    var req = new XMLHttpRequest();
    var payload = {updateRow:true};
-   payload.id = document.getElementById("formId").value;
-   payload.name = document.getElementById("formName").value;
-   //check for empty reps
-   if(document.getElementById("formReps").value == "") {
-      payload.reps = null;
-   } else {
-      payload.reps = document.getElementById("formReps").value;
-   }
-   //check for empty weight
-   if (document.getElementById("formWeight").value == ""){
-      payload.weight = null;
-   } else {
-      payload.weight = document.getElementById("formWeight").value;
-   }
-   //check for empty date
-   if(document.getElementById("formDate").value == ""){
-      payload.date = null;
-   } else {
-      payload.date = document.getElementById("formDate").value;
-   }
+   payload.isbn = document.getElementById("formISBN").value;
+   payload.topic = document.getElementById("formTopic").value;
+   payload.shelf = document.getElementById("formShelf").value;
+   payload.date = document.getElementById("formDate").value;
+   payload.title = document.getElementById("formTitle").value;
+   payload.authors = getSelectValues(document.getElementById("formBookAuthor"));
    
-   //check for empty unit of weight
-   if((!document.getElementById("formLbs").checked && !document.getElementById("formKgs").checked)|| document.getElementById("formWeight").value == "") {
-      payload.lbs = null;
+   //check for empty description
+   if(document.getElementById("formDescription").value == "") {
+      payload.desc = null;
    } else {
-      payload.lbs = document.getElementById("formLbs").checked;
+      payload.desc = document.getElementById("formDescription").value;
    }
    
    //reset form
    resetForm();
    
    //send update to DB
-   req.open('POST', '/', true);
+   req.open('POST', '/book', true);
    req.setRequestHeader('Content-Type', 'application/json');
    req.addEventListener('load',function(){
       if(req.status >= 200 && req.status < 400){
          var response = JSON.parse(req.responseText);
 
          //get row to update
-         var rowToUpdate = document.getElementById(response[0].id);
-         
+         var rowToUpdate = document.getElementById(response[0].isbn);
+                          
          //fill cells
          var rowCells = rowToUpdate.getElementsByTagName("td");
-         rowCells[0].textContent = response[0].date;
-         rowCells[1].textContent = response[0].name;
-         rowCells[2].textContent = response[0].reps;
-         rowCells[3].textContent = response[0].weight;
-         if(response[0].lbs == null){
-            rowCells[4].textContent = "";
-         } else if (response[0].lbs == true) {
-            rowCells[4].textContent = "lbs";
+         rowCells[0].textContent = response[0].isbn;
+         rowCells[1].textContent = response[0].title;
+         rowCells[2].textContent = response[0].published_date;
+         if(response[0].description == null){
+            rowCells[3].textContent = "";
          } else {
-            rowCells[4].textContent = "kgs";
+            rowCells[3].textContent = response[0].description;
+         }
+         
+         rowCells[4].textContent = response[0].authors;
+         rowCells[5].textContent = response[0].category;
+         rowCells[6].textContent = response[0].location;
+         if(response[0].checked_out == null){
+            rowCells[7].textContent = "available";
+         } else {
+            rowCells[7].textContent = "unavailable"
          }
          
       } else {
@@ -387,4 +383,34 @@ function getSelectValues(select) {
       }
    }
    return result;
+}
+
+//helper function to set the select values for topic, shelf and author
+//can be used with single select (set type = true) or multi-select (set type = false)
+function setSelectValue(selector, val, type){
+   //for single selects
+   if(type){
+      //loop through select options
+      for(var i = 0; i < selector.options.length; i++){
+         //check for correct value
+         if(selector.options[i].value == val) {
+            //set selector
+            selector.options[i].selected = true;
+            return;
+         }
+      }
+   //for multi-selects (takes an array as val)
+   } else {
+      //loop through array
+      for(var i = 0; i < val.length; i++) {
+         //loop through select options
+         for(var j = 0; j < selector.options.length; j++){
+            if(selector.options[j].value == val[i]) {
+               //set selector
+               selector.options[j].selected = true;
+               break;
+            }
+         } 
+      }
+   }
 }
