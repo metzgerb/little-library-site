@@ -172,46 +172,57 @@ function deleteRow(isbn){
 
 //primes update
 function editRow(id){
-   //alert since code is not finished yet - remove once implemented
-   alert("Edit functionality not implemented yet");
-   /*//get values from row
+
+   //get values from row
    var rowToUpdate = document.getElementById(id);
    var rowCells = rowToUpdate.getElementsByTagName("td");
-   
-   document.getElementById("formId").value = id;
-   document.getElementById("formName").value = rowCells[1].textContent;
-   document.getElementById("formReps").value= rowCells[2].textContent;
-   document.getElementById("formWeight").value= rowCells[3].textContent;
+
+   //fill in form
+   document.getElementById("formISBN").value = id;
+   document.getElementById("formTitle").value = rowCells[1].textContent;
+   document.getElementById("formDescription").value = rowCells[3].textContent; 
    
    //format date from MM-DD-YYYY to YYYY-MM-DD
-   if(rowCells[0].textContent!= ""){
-      var formattedDate = rowCells[0].textContent.split("-");
+   if(rowCells[2].textContent!= ""){
+      var formattedDate = rowCells[2].textContent.split("-");
       formattedDate = formattedDate[2] + '-' + formattedDate[0] + '-' + formattedDate[1];
       document.getElementById("formDate").value= formattedDate;
    } else {
       document.getElementById("formDate").value = "";
    }
+      
+   //get topic, shelf and authors
+   var req = new XMLHttpRequest();
+   var payload = {edit:true};
+   payload.isbn = id;
+   console.log(payload);
+   req.open('POST', '/book', true);
+   req.setRequestHeader('Content-Type', 'application/json');
+   req.addEventListener('load',function(){
+      if(req.status >= 200 && req.status < 400){
+         var response = JSON.parse(req.responseText);
+         
+         //set value for topic
+         
+         //set value for shelf
+         
+         //set values for author 
+         
+         //change form buttons from add to updateRow
+         document.getElementById("formBtn").removeEventListener("click",addRow);
+         document.getElementById("formBtn").addEventListener("click", updateRow);
+         document.getElementById("formBtn").textContent = "Update";
+         document.getElementById("resetBtn").textContent = "Cancel";
    
-   if(rowCells[4].textContent == "") {
-      document.getElementById("formLbs").checked = false;
-      document.getElementById("formKgs").checked = false;
-   } else if (rowCells[4].textContent == "lbs"){
-      document.getElementById("formLbs").checked = true;
-      document.getElementById("formKgs").checked = false;
-   } else {
-      document.getElementById("formLbs").checked = false;
-      document.getElementById("formKgs").checked = true;
-   }
+         //set focus to first form field
+         document.getElementById("formISBN").focus();
    
-   //change form buttons from add to updateRow
-   document.getElementById("formBtn").removeEventListener("click",addRow);
-   document.getElementById("formBtn").addEventListener("click", updateRow);
-   document.getElementById("formBtn").textContent = "Update";
-   document.getElementById("resetBtn").textContent = "Cancel";
+      } else {
+         console.log("Error in network request: " + req.statusText);
+      }});
    
-   //set focus to first form field
-   document.getElementById("formISBN").focus();
-   */
+   //send payload to node app
+   req.send(JSON.stringify(payload));
 }
 
 //handles update

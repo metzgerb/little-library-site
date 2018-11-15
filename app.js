@@ -29,20 +29,20 @@ app.get('/book',function(req,res,next){
       //get shelves
       getShelves().then(function(rows) {
          context.shelves = rows;
-         
+      
          //get shelves
          getAuthors().then(function(rows) {
             context.authors = rows;
             var conditions = [];
             var values = [];
             var author = [];
-            
+         
             //check for author criteria
             if (typeof req.query.a !== 'undefined') {
                author.push("a.id = ?");
                values.push(parseInt(req.query.a));
             }
-            
+          
             //check for search criteria
             if (typeof req.query.s !== 'undefined') {
                conditions.push('CONCAT(b.isbn, b.title, b.published_date, b.description, ba.authors, t.category, s.location) LIKE ?');
@@ -60,7 +60,7 @@ app.get('/book',function(req,res,next){
                conditions.push("t.id = ?");
                values.push(parseInt(req.query.t));
             }
-            
+         
             var whereClause = {
                author: author.length ?
                   author.join(' AND ') : '1',
@@ -70,25 +70,25 @@ app.get('/book',function(req,res,next){
             };
 
             mysql.pool.query('SELECT b.isbn, b.title, b.published_date, b.description, ba.authors, t.category, s.location, b.checked_out \
-                     FROM book b \
-                     INNER JOIN topic t ON b.tid = t.id \
-                     INNER JOIN shelf s ON b.sid = s.id \
-                     INNER JOIN (SELECT tmp.bid AS bid, GROUP_CONCAT(author) AS authors \
-                                 FROM (SELECT b.bid, CONCAT(a.first_name, " ", a.last_name) AS author \
-                                       FROM book_author b \
-                                       INNER JOIN author a ON b.aid = a.id \
-                                       WHERE ' + whereClause.author + ') AS tmp \
-                                 GROUP BY tmp.bid) AS ba ON b.isbn = ba.bid ' +
-                     'WHERE ' + whereClause.where + ' ' +
-                     'ORDER BY b.title', whereClause.values,
+                              FROM book b \
+                              INNER JOIN topic t ON b.tid = t.id \
+                              INNER JOIN shelf s ON b.sid = s.id \
+                              INNER JOIN (SELECT tmp.bid AS bid, GROUP_CONCAT(author) AS authors \
+                                          FROM (SELECT b.bid, CONCAT(a.first_name, " ", a.last_name) AS author \
+                                                FROM book_author b \
+                                                INNER JOIN author a ON b.aid = a.id \
+                                                WHERE ' + whereClause.author + ') AS tmp \
+                                          GROUP BY tmp.bid) AS ba ON b.isbn = ba.bid ' +
+                              'WHERE ' + whereClause.where + ' ' +
+                              'ORDER BY b.title', whereClause.values,
             function(err, rows, fields){
                if(err){
                   next(err);
                   return;
                }
-      
+    
                context.results = rows;
-     
+   
                //perform formatting
                for (var i = 0; i< context.results.length; i++){
                   //reformat dates
@@ -106,6 +106,21 @@ app.get('/book',function(req,res,next){
 
 //render POST for book
 app.post('/book',function(req,res,next){
+   //check for edit priming request
+   if(req.body.hasOwnProperty('edit')){
+      //get topic and shelf from book table
+      mysql.pool.query('SELECT b.tid, b.sid \
+                        FROM book b \
+                        WHERE b.isbn = ?;', [req.body.isbn],
+         function(err, rows, fields){
+            if(err){
+               next(err);
+               return;
+            }
+            //add author async call and store in context
+            res.json(rows);
+         });
+   }
    //check if adding a new item
    if(req.body.hasOwnProperty('add')){
       
