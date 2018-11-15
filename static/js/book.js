@@ -179,6 +179,7 @@ function editRow(id){
 
    //fill in form
    document.getElementById("formISBN").value = id;
+   document.getElementById("formUpdateISBN").value = id;
    document.getElementById("formTitle").value = rowCells[1].textContent;
    document.getElementById("formDescription").value = rowCells[3].textContent; 
    
@@ -201,7 +202,6 @@ function editRow(id){
    req.addEventListener('load',function(){
       if(req.status >= 200 && req.status < 400){
          var response = JSON.parse(req.responseText);
-         console.log(response);
          
          //set value for topic
          setSelectValue(document.getElementById("formTopic"),response.topic, true);
@@ -272,6 +272,7 @@ function updateRow(){
    //create request
    var req = new XMLHttpRequest();
    var payload = {updateRow:true};
+   payload.old_isbn = document.getElementById("formUpdateISBN").value;
    payload.isbn = document.getElementById("formISBN").value;
    payload.topic = document.getElementById("formTopic").value;
    payload.shelf = document.getElementById("formShelf").value;
@@ -295,10 +296,17 @@ function updateRow(){
    req.addEventListener('load',function(){
       if(req.status >= 200 && req.status < 400){
          var response = JSON.parse(req.responseText);
-
-         //get row to update
-         var rowToUpdate = document.getElementById(response[0].isbn);
-                          
+         
+         //check if error was returned
+         if(response.hasOwnProperty('error')) {
+            alert(response['error']);
+            return;
+         }
+         
+         //get row to update (using payload because user can change ISBN
+         var rowToUpdate = document.getElementById(payload.old_isbn);
+         rowToUpdate.id = response[0].isbn;
+            
          //fill cells
          var rowCells = rowToUpdate.getElementsByTagName("td");
          rowCells[0].textContent = response[0].isbn;
@@ -318,6 +326,10 @@ function updateRow(){
          } else {
             rowCells[7].textContent = "unavailable"
          }
+         
+         //update button on-clicks
+         rowCells[8].firstChild.onclick = function() {editRow(response[0].isbn)};
+         rowCells[8].lastChild.onclick = function() {deleteRow(response[0].isbn)};
          
       } else {
          console.log("Error in network request: " + req.statusText);
