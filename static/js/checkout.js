@@ -14,6 +14,12 @@ function checkOut(isbn){
    req.setRequestHeader('Content-Type', 'application/json');
    req.addEventListener('load',function(){
       if(req.status >= 200 && req.status < 400){
+         //check if error was returned
+         var response = JSON.parse(req.responseText);
+         if(response.hasOwnProperty('error')) {
+            alert(response['error']);
+            return;
+         }
          //remove row from table
          var table = document.getElementById("data-table");
          

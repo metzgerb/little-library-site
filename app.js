@@ -614,17 +614,35 @@ app.get('/reader/checkout',function(req,res,next){
 app.post('/reader/checkout',function(req,res,next){ 
    //checking out
    if(req.body.hasOwnProperty('checkOut')){   
-      //update database
-      mysql.pool.query("UPDATE `book` \
-                        SET checked_out = ? \
-                        WHERE isbn = ?;",
-         [req.body.id, req.body.isbn], function(err, result){
-         if(err){
-            next(err);
-            return;
-         }
+      //check if limit of 5 books has been reached
+      mysql.pool.query("SELECT COUNT(b.isbn) as books_checked_out \
+                        FROM book b \
+                        WHERE b.checked_out = ?;",
+         [req.body.id], function(err, result){
+            if(err){
+               next(err);
+               return;
+            }
+
+            //check if book limit is reached
+            if (result[0].books_checked_out >= 5) {
+               //limit is reached, return error
+               var response = {error : "Readers can only check out 5 books at a time! Please check in a book before checking out another book."};
+               res.json(response);
+            } else {
+               //update database
+               mysql.pool.query("UPDATE `book` \
+                                 SET checked_out = ? \
+                                 WHERE isbn = ?;",
+                  [req.body.id, req.body.isbn], function(err, result){
+                     if(err){
+                        next(err);
+                        return;
+                     }
          
-         res.json(result);
+                     res.json(result);
+               });
+            }
       });
    }
 });
