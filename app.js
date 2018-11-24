@@ -153,10 +153,18 @@ app.post('/book',function(req,res,next){
                next(err);
                return;
             }
+
+            var dateRegex = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/g;
+            var found = req.body.date.match(dateRegex);
+
             //check if book is found
             if (result.length > 0) {
                //book is found
                var response = {error : "ISBN has already been entered!"};
+               res.json(response);
+            } else if (!found || !isValidDate(found[0].substring(8),found[0].substring(5,7),found[0].substring(0,4))) {
+               //check if date is valid
+               var response = {error : "Date is invalid! Please use 'YYYY-MM-DD' format."};
                res.json(response);
             } else {
             
@@ -214,7 +222,6 @@ app.post('/book',function(req,res,next){
   
    //check if updating item
    if(req.body.hasOwnProperty('updateRow')){
-      console.log(req.body.authors);
       
       //check if book is already added
       mysql.pool.query("SELECT isbn FROM book WHERE isbn=?;", [req.body.isbn],
@@ -223,10 +230,18 @@ app.post('/book',function(req,res,next){
                next(err);
                return;
             }
+            
+            var dateRegex = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/g;
+            var found = req.body.date.match(dateRegex);
+            
             //check if book is found
             if (result.length > 0 && req.body.isbn != req.body.old_isbn) {
                //book is found
                var response = {error : "ISBN has already been entered!"};
+               res.json(response);
+            } else if (!found || !isValidDate(found[0].substring(8),found[0].substring(5,7),found[0].substring(0,4))) {
+               //check if date is valid
+               var response = {error : "Date is invalid! Please use 'YYYY-MM-DD' format."};
                res.json(response);
             } else {
             
@@ -389,71 +404,89 @@ app.get('/reader',function(req,res,next){
 app.post('/reader',function(req,res,next){
    //check if adding a new item
    if(req.body.hasOwnProperty('add')){
-      //insert into database
-      mysql.pool.query("INSERT INTO `reader`(first_name, last_name, phone, card_expiration) VALUES (?,?,?,?);",
-         [req.body.fname, req.body.lname, req.body.phone, req.body.expdate], function(err, result){
-         if(err){
-            next(err);
-            return;
-         }
-         
-         //return row to add to HTML
-         mysql.pool.query('SELECT r.id, r.first_name, r.last_name, r.phone, r.card_expiration, COUNT(b.isbn) AS books_checked_out \
-                           FROM reader r \
-                           LEFT JOIN book b ON r.id = b.checked_out \
-                           WHERE id=? \
-                           GROUP BY r.id \
-                           ORDER BY r.last_name, r.first_name;', [result.insertId], 
-         function(err, rows, fields){
+      
+      var dateRegex = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/g;
+      var found = req.body.expdate.match(dateRegex);
+      
+      if (!found || !isValidDate(found[0].substring(8),found[0].substring(5,7),found[0].substring(0,4))) {
+         //check if date is valid
+         var response = {error : "Date is invalid! Please use 'YYYY-MM-DD' format."};
+         res.json(response);
+      } else {
+         //insert into database
+         mysql.pool.query("INSERT INTO `reader`(first_name, last_name, phone, card_expiration) VALUES (?,?,?,?);",
+            [req.body.fname, req.body.lname, req.body.phone, req.body.expdate], function(err, result){
             if(err){
                next(err);
                return;
             }
+         
+            //return row to add to HTML
+            mysql.pool.query('SELECT r.id, r.first_name, r.last_name, r.phone, r.card_expiration, COUNT(b.isbn) AS books_checked_out \
+                              FROM reader r \
+                              LEFT JOIN book b ON r.id = b.checked_out \
+                              WHERE id=? \
+                              GROUP BY r.id \
+                              ORDER BY r.last_name, r.first_name;', [result.insertId], 
+            function(err, rows, fields){
+               if(err){
+                  next(err);
+                  return;
+               }
             
-            //reformat date for html rendering
-            rows[0].card_expiration = moment(rows[0].card_expiration).format('MM-DD-YYYY');
+               //reformat date for html rendering
+               rows[0].card_expiration = moment(rows[0].card_expiration).format('MM-DD-YYYY');
             
-            res.json(rows);
+               res.json(rows);
+            });
          });
-      });
+      }
    }
   
    //check if updating item
    if(req.body.hasOwnProperty('updateRow')){
-      //update database
+      //check for valid date format
+      var dateRegex = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/g;
+      var found = req.body.expdate.match(dateRegex);
       
-      mysql.pool.query('UPDATE `reader` \
-                        SET first_name = ?, \
-                           last_name = ?, \
-                           phone = ?, \
-                           card_expiration = ? \
-                        WHERE id = ?;',
-         [req.body.fname, req.body.lname, req.body.phone, req.body.expdate, req.body.id], function(err, result){
-         if(err){
-            next(err);
-            return;
-         }
-         
-         //return row to update in HTML
-         mysql.pool.query('SELECT r.id, r.first_name, r.last_name, r.phone, r.card_expiration, COUNT(b.isbn) AS books_checked_out \
-                           FROM reader r \
-                           LEFT JOIN book b ON r.id = b.checked_out \
-                           WHERE id=? \
-                           GROUP BY r.id \
-                           ORDER BY r.last_name, r.first_name;', [req.body.id], 
-         function(err, rows, fields){
+      if (!found || !isValidDate(found[0].substring(8),found[0].substring(5,7),found[0].substring(0,4))) {
+         //check if date is valid
+         var response = {error : "Date is invalid! Please use 'YYYY-MM-DD' format."};
+         res.json(response);
+      } else {
+         //update database
+         mysql.pool.query('UPDATE `reader` \
+                           SET first_name = ?, \
+                              last_name = ?, \
+                              phone = ?, \
+                              card_expiration = ? \
+                           WHERE id = ?;',
+            [req.body.fname, req.body.lname, req.body.phone, req.body.expdate, req.body.id], function(err, result){
             if(err){
                next(err);
                return;
             }
+         
+            //return row to update in HTML
+            mysql.pool.query('SELECT r.id, r.first_name, r.last_name, r.phone, r.card_expiration, COUNT(b.isbn) AS books_checked_out \
+                              FROM reader r \
+                              LEFT JOIN book b ON r.id = b.checked_out \
+                              WHERE id=? \
+                              GROUP BY r.id \
+                              ORDER BY r.last_name, r.first_name;', [req.body.id], 
+            function(err, rows, fields){
+               if(err){
+                  next(err);
+                  return;
+               }
             
-            //reformat date field for html rendering
-            rows[0].card_expiration = moment(rows[0].card_expiration).format('MM-DD-YYYY');
+               //reformat date field for html rendering
+               rows[0].card_expiration = moment(rows[0].card_expiration).format('MM-DD-YYYY');
             
-            res.json(rows);
+               res.json(rows);
+            });
          });
-      });
-     
+      }
    }
   
    //check if deleting item
@@ -615,8 +648,10 @@ app.post('/reader/checkout',function(req,res,next){
    //checking out
    if(req.body.hasOwnProperty('checkOut')){   
       //check if limit of 5 books has been reached
-      mysql.pool.query("SELECT COUNT(b.isbn) as books_checked_out \
+      mysql.pool.query("SELECT (r.card_expiration < Now()) AS expired, COUNT(b.isbn) AS books_checked_out \
                         FROM book b \
+                        INNER JOIN reader r \
+                        ON b.checked_out = r.id \
                         WHERE b.checked_out = ?;",
          [req.body.id], function(err, result){
             if(err){
@@ -628,6 +663,11 @@ app.post('/reader/checkout',function(req,res,next){
             if (result[0].books_checked_out >= 5) {
                //limit is reached, return error
                var response = {error : "Readers can only check out 5 books at a time! Please check in a book before checking out another book."};
+               res.json(response);
+            
+            } else if (result[0].expired == 1){
+               //limit is reached, return error
+               var response = {error : "Card is expired! Please renew library card before checking out books."};
                res.json(response);
             } else {
                //update database
@@ -1065,3 +1105,34 @@ function getAuthors(){
       });
    });
 }
+
+/**
+ * Get the number of days in any particular month
+ * @link https://stackoverflow.com/a/1433119/1293256
+ * @param  {integer} m The month (valid: 0-11)
+ * @param  {integer} y The year
+ * @return {integer}   The number of days in the month
+ */
+var daysInMonth = function (m, y) {
+    switch (m) {
+        case 1 :
+            return (y % 4 == 0 && y % 100) || y % 400 == 0 ? 29 : 28;
+        case 8 : case 3 : case 5 : case 10 :
+            return 30;
+        default :
+            return 31
+    }
+};
+
+/**
+ * Check if a date is valid
+ * @link https://stackoverflow.com/a/1433119/1293256
+ * @param  {[type]}  d The day
+ * @param  {[type]}  m The month
+ * @param  {[type]}  y The year
+ * @return {Boolean}   Returns true if valid
+ */
+var isValidDate = function (d, m, y) {
+    m = parseInt(m, 10) - 1;
+    return m >= 0 && m < 12 && d > 0 && d <= daysInMonth(m, y);
+};

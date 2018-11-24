@@ -52,6 +52,12 @@ function addRow(){
       if(req.status >= 200 && req.status < 400){
          var response = JSON.parse(req.responseText);
          
+         //check if error was returned
+         if(response.hasOwnProperty('error')) {
+            alert(response['error']);
+            return;
+         }
+         
          //build table 
          var table = document.getElementById("data-table");
          
@@ -224,7 +230,13 @@ function updateRow(){
    req.addEventListener('load',function(){
       if(req.status >= 200 && req.status < 400){
          var response = JSON.parse(req.responseText);
-
+         
+         //check if error was returned
+         if(response.hasOwnProperty('error')) {
+            alert(response['error']);
+            return;
+         }
+         
          //get row to update
          var rowToUpdate = document.getElementById(response[0].id);
          
@@ -235,7 +247,7 @@ function updateRow(){
          rowCells[2].textContent = response[0].last_name;
          rowCells[3].textContent = response[0].phone;
          rowCells[4].textContent = response[0].card_expiration;
-         rowCells[5].innerHTML = '<a href="/reader/detail/?r=' + response[0].id + '">' + response[0].books_checked_out + '</a>';
+         rowCells[5].innerHTML = '<a href="/reader/detail/?r=' + response[0].id + '">' + response[0].books_checked_out + ' (Check In)</a>';
          
       } else {
          console.log("Error in network request: " + req.statusText);
